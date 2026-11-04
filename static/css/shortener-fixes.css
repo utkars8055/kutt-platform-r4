@@ -1,0 +1,28 @@
+/* -------------------------------------------------------------------------
+   SHORTENER RESULT FIX
+   The refresh layer sets a 40px minimum height on every button, which made
+   the 36px copy control taller than its box and let it run into the URL.
+   These rules keep the copy control at its intended size and beside the URL.
+   ------------------------------------------------------------------------- */
+.clipboard button {
+  min-width: 0;
+  min-height: 0;
+}
+
+main #shorturl {
+  gap: 14px;
+  max-width: 100%;
+}
+
+main #shorturl .clipboard {
+  flex: 0 0 36px;
+  width: 36px;
+  height: 36px;
+  margin: 0;
+}
+
+main #shorturl h1.link {
+  min-width: 0;
+  flex: 0 1 auto;
+  overflow-wrap: anywhere;
+}
