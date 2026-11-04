@@ -26,9 +26,9 @@ if (env.REDIS_ENABLED) {
   const visitProcessor = require(path.resolve(__dirname, "visit.js"));
   visit = {
     add(data) {
-      visitProcessor({ data }).catch(function(error) {
-        console.error("Add visit error: ", error);
-      });
+      // Match Bull Queue's Promise-returning add() API so callers can
+      // handle visit failures without crashing the redirect request.
+      return Promise.resolve().then(() => visitProcessor({ data }));
     }
   }
 }
