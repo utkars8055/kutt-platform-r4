@@ -3,11 +3,15 @@ const utils = require("../utils");
 const env = require("../env");
 
 const FORMATS = ["direct_link", "onclick", "vignette", "in_page_push", "banner", "custom_html"];
+const CREATION_FLAGS = ["allowPublicSignup", "allowUserLinks"];
 const DEFAULT_MAX_COUNTDOWN = Math.min(30, Math.max(0, Math.floor(env.REDIRECT_COUNTDOWN_MAX_SECONDS)));
 const DEFAULTS = {
   countdownSeconds: Math.min(DEFAULT_MAX_COUNTDOWN, Math.max(0, Math.floor(env.REDIRECT_COUNTDOWN_SECONDS))),
   countdownMaxSeconds: DEFAULT_MAX_COUNTDOWN,
   serviceSafetyMessage: "Always check the destination before proceeding.",
+  // true keeps current behaviour. An admin sets these to false to restrict creation.
+  allowPublicSignup: true,
+  allowUserLinks: true,
 };
 
 let cached = null;
@@ -47,6 +51,11 @@ async function saveAdminSettings(input) {
   if (input.countdownMaxSeconds !== undefined && (!Number.isInteger(input.countdownMaxSeconds) || input.countdownMaxSeconds < input.countdownSeconds || input.countdownMaxSeconds > 30)) {
     throw new Error("Countdown maximum must be between the selected countdown and 30 seconds.");
   }
+  for (const flag of CREATION_FLAGS) {
+    if (input[flag] !== undefined && typeof input[flag] !== "boolean") {
+      throw new Error(`${flag} must be true or false.`);
+    }
+  }
   const placements = input.adPlacements || {};
   if (!placements || typeof placements !== "object" || Array.isArray(placements)) throw new Error("Advertising placements must be an object.");
   const seenZoneIds = new Set();
@@ -81,6 +90,10 @@ async function saveAdminSettings(input) {
     await saveSetting("countdownSeconds", input.countdownSeconds, trx);
     await saveSetting("countdownMaxSeconds", input.countdownMaxSeconds ?? 30, trx);
     await saveSetting("serviceSafetyMessage", String(input.serviceSafetyMessage || DEFAULTS.serviceSafetyMessage).slice(0, 300), trx);
+    // Only write creation flags the caller actually sent, so older forms cannot reset them.
+    for (const flag of CREATION_FLAGS) {
+      if (typeof input[flag] === "boolean") await saveSetting(flag, input[flag], trx);
+    }
     for (const format of FORMATS) {
       const item = placements[format] || {};
       const row = {

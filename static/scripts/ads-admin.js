@@ -26,6 +26,8 @@
       countdownSeconds: document.getElementById("countdown-seconds").value.trim() === "" ? null : Number(document.getElementById("countdown-seconds").value),
       countdownMaxSeconds: document.getElementById("countdown-max-seconds").value.trim() === "" ? null : Number(document.getElementById("countdown-max-seconds").value),
       serviceSafetyMessage: document.getElementById("safety-message").value,
+      allowPublicSignup: document.getElementById("allow-public-signup").checked,
+      allowUserLinks: document.getElementById("allow-user-links").checked,
       adPlacements,
     };
   }
@@ -35,6 +37,8 @@
     document.getElementById("countdown-max-seconds").value = settings.countdownMaxSeconds ?? 30;
     document.getElementById("countdown-seconds").max = settings.countdownMaxSeconds ?? 30;
     document.getElementById("safety-message").value = settings.serviceSafetyMessage || "Always check the destination before proceeding.";
+    document.getElementById("allow-public-signup").checked = settings.allowPublicSignup !== false;
+    document.getElementById("allow-user-links").checked = settings.allowUserLinks !== false;
     document.querySelectorAll(".ad-config").forEach(card => {
       const item = settings.adPlacements?.[card.dataset.format] || {};
       card.querySelector(".enabled").checked = !!item.enabled;
