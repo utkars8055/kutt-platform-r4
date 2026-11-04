@@ -3202,3 +3202,34 @@ footer a { color: #64748b; }
   #main-table-wrapper table tbody tr[id^="tr-"] > td.actions { gap: 6px; }
   main.admin-settings-page { width: calc(100% - 22px); }
 }
+
+
+/* Mobile card field alignment corrections. */
+@media (max-width: 768px) {
+  #main-table-wrapper table tbody tr[id^="tr-"]:has(> td.original-url) {
+    grid-template-areas:
+      "primary primary"
+      "secondary views"
+      "tertiary tertiary"
+      "actions actions";
+  }
+  #main-table-wrapper table tbody tr[id^="tr-"] > td.views {
+    grid-area: views;
+  }
+  #main-table-wrapper table tbody tr[id^="tr-"]:has(> td.users-email) {
+    grid-template-areas:
+      "primary primary"
+      "secondary tertiary"
+      "fourth fifth"
+      "sixth sixth"
+      "actions actions";
+  }
+  #main-table-wrapper table tbody tr[id^="tr-"] > td.users-links-count {
+    grid-area: sixth;
+    justify-self: start;
+    text-align: left;
+  }
+  #main-table-wrapper table tbody tr[id^="tr-"] > td.users-links-count:before {
+    text-align: left;
+  }
+}
