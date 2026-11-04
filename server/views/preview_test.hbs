@@ -1,0 +1,24 @@
+{{> header}}
+<main class="section-container preview-test-page">
+  <h1>Social preview tester</h1>
+  <p>This page shows the metadata saved for your short link. The image is loaded directly by your browser from its external host; Kutt does not download or proxy it.</p>
+  {{#unless hasPreview}}<p class="description">No social-preview metadata is configured yet. Edit this short link and add external image or video metadata.</p>{{/unless}}
+  <section class="preview-card">
+    {{#if preview.image_url}}<img src="{{preview.image_url}}" alt="{{preview.image_alt}}" referrerpolicy="no-referrer" />{{/if}}
+    <h2>{{preview.title}}</h2>
+    <p>{{preview.description}}</p>
+    <small>{{shortUrl}}</small>
+  </section>
+  <section class="settings-panel">
+    <h2>Metadata values</h2>
+    <p><strong>Destination domain:</strong> {{destinationHost}}</p>
+    <p><strong>Image URL:</strong> {{preview.image_url}}</p>
+    <p><strong>Video metadata URL:</strong> {{preview.video_url}}</p>
+    {{#if preview.video_url}}<p><a href="{{preview.video_url}}" target="_blank" rel="noopener noreferrer">Open externally hosted video</a></p>{{/if}}
+    <p><strong>Video MIME type:</strong> {{preview.video_mime_type}}</p>
+  <p><strong>Social previews:</strong> {{#if preview_enabled}}Enabled{{else}}Disabled{{/if}}</p>
+    <p><strong>Image alt:</strong> {{preview.image_alt}}</p>
+    <p>Social platforms cache cards independently. Use each platform's sharing/debugging tool to request a fresh scrape.</p>
+  </section>
+</main>
+{{> footer}}

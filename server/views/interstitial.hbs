@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex,nofollow" />
+  <title>Your link is almost ready · {{site_name}}</title>
+  <link rel="stylesheet" href="/css/redirect.css" />
+  {{#each headAdCodes}}
+    <template class="ad-tag-template" data-placement="head" data-format="{{format}}">{{{code}}}</template>
+  {{/each}}
+</head>
+<body data-link-id="{{linkId}}" data-ad-formats="{{adFormats}}">
+  <main class="redirect-shell">
+    <div class="brand">{{site_name}}</div>
+    {{#each topAdCodes}}<div class="ad-placement ad-code"><template class="ad-tag-template" data-placement="top" data-format="{{format}}">{{{code}}}</template></div>{{/each}}
+    {{#each topDirectLinks}}<aside class="ad-placement sponsored-link"><span>Sponsored</span><a href="{{destination_url}}" target="_blank" rel="sponsored noopener noreferrer">{{#if label}}{{label}}{{else}}Visit sponsored link{{/if}}</a></aside>{{/each}}
+    {{#each topCustomAds}}<section class="ad-placement custom-ad"><span class="ad-label">Advertisement</span><iframe title="Advertisement" sandbox="allow-scripts" loading="lazy" referrerpolicy="no-referrer" srcdoc="{{srcdoc}}"></iframe></section>{{/each}}
+    <section class="redirect-card" aria-labelledby="redirect-title">
+      <div class="eyebrow">LINK PREPARATION</div>
+      <h1 id="redirect-title">Your link is almost ready</h1>
+      <p class="intro">Please wait while we prepare your destination.</p>
+      <div class="countdown" aria-live="polite">
+        <span id="countdown-number">{{countdown}}</span>
+        <span id="countdown-label">{{#if countdown}}seconds remaining{{else}}ready to continue{{/if}}</span>
+      </div>
+      <button id="get-link" type="button" disabled data-destination="{{destination}}">
+        GET LINK <span aria-hidden="true">→</span>
+      </button>
+      <p id="js-fallback" class="js-fallback">JavaScript is unavailable. <a href="{{destination}}" rel="nofollow">Continue directly to your destination</a>.</p>
+      <p class="destination">Destination: <strong>{{destinationHost}}</strong></p>
+      <p class="safety">{{safetyMessage}}</p>
+    </section>
+    {{#each middleAdCodes}}<div class="ad-placement ad-code"><template class="ad-tag-template" data-placement="middle" data-format="{{format}}">{{{code}}}</template></div>{{/each}}
+    {{#each middleDirectLinks}}<aside class="ad-placement sponsored-link"><span>Sponsored</span><a href="{{destination_url}}" target="_blank" rel="sponsored noopener noreferrer">{{#if label}}{{label}}{{else}}Visit sponsored link{{/if}}</a></aside>{{/each}}
+    {{#each middleCustomAds}}<section class="ad-placement custom-ad"><span class="ad-label">Advertisement</span><iframe title="Advertisement" sandbox="allow-scripts" loading="lazy" referrerpolicy="no-referrer" srcdoc="{{srcdoc}}"></iframe></section>{{/each}}
+    {{#each bottomAdCodes}}<div class="ad-placement ad-code"><template class="ad-tag-template" data-placement="bottom" data-format="{{format}}">{{{code}}}</template></div>{{/each}}
+    {{#each bottomDirectLinks}}<aside class="ad-placement sponsored-link"><span>Sponsored</span><a href="{{destination_url}}" target="_blank" rel="sponsored noopener noreferrer">{{#if label}}{{label}}{{else}}Visit sponsored link{{/if}}</a></aside>{{/each}}
+    {{#each bottomCustomAds}}<section class="ad-placement custom-ad"><span class="ad-label">Advertisement</span><iframe title="Advertisement" sandbox="allow-scripts" loading="lazy" referrerpolicy="no-referrer" srcdoc="{{srcdoc}}"></iframe></section>{{/each}}
+    <footer>Advertising may be displayed while this page is open. Ads are not required to continue.</footer>
+  </main>
+  <script>
+    (function () {
+      const button = document.getElementById("get-link");
+      const fallback = document.getElementById("js-fallback");
+      if (fallback) fallback.hidden = true;
+      const number = document.getElementById("countdown-number");
+      const label = document.getElementById("countdown-label");
+      const destination = button.dataset.destination;
+      let remaining = Number({{{countdown}}});
+      function enable() {
+        number.textContent = "0";
+        label.textContent = "ready to continue";
+        button.disabled = false;
+        button.focus({ preventScroll: true });
+      }
+      // Initialize the visitor's timer before activating any third-party ad code.
+      if (!Number.isFinite(remaining) || remaining <= 0) enable();
+      else {
+        number.textContent = String(remaining);
+        const timer = window.setInterval(function () {
+          remaining = Math.max(0, remaining - 1);
+          number.textContent = String(remaining);
+          if (remaining === 0) {
+            window.clearInterval(timer);
+            enable();
+          }
+        }, 1000);
+      }
+      button.addEventListener("click", function () {
+        if (button.disabled) return;
+        window.location.assign(destination);
+      });
+
+      // Activate administrator-supplied tags dynamically. External scripts are
+      // async from the parser's perspective, so a slow provider cannot stall the
+      // countdown or prevent the Get Link button from becoming available.
+      function sendDiagnostic(format, eventType, linkId) {
+        if (!linkId || !navigator.sendBeacon) return;
+        const payload = new Blob([JSON.stringify({ format, event_type: eventType, link_uuid: linkId })], { type: "application/json" });
+        navigator.sendBeacon("/api/settings/ad-events", payload);
+      }
+      const linkId = document.body.dataset.linkId;
+      const tagTemplates = Array.from(document.querySelectorAll("template.ad-tag-template"));
+      tagTemplates.forEach(function (template) {
+        const format = template.dataset.format || "banner";
+        const target = template.dataset.placement === "head" ? document.head : template.parentElement;
+        const fragment = template.content.cloneNode(true);
+        fragment.querySelectorAll("script").forEach(function (oldScript) {
+          const script = document.createElement("script");
+          Array.from(oldScript.attributes).forEach(function (attribute) {
+            script.setAttribute(attribute.name, attribute.value);
+          });
+          if (!oldScript.hasAttribute("async")) script.async = false;
+          script.textContent = oldScript.textContent;
+          if (oldScript.src) script.addEventListener("error", function () {
+            sendDiagnostic(format, "script_load_error", linkId);
+          }, { once: true });
+          oldScript.replaceWith(script);
+        });
+        target.appendChild(fragment);
+        template.remove();
+        sendDiagnostic(format, "page_loaded", linkId);
+      });
+    })();
+  </script>
+</body>
+</html>

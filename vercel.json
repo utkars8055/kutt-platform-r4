@@ -1,0 +1,19 @@
+{
+  "version": 2,
+  "functions": {
+    "api/index.js": {
+      "maxDuration": 60,
+      "includeFiles": [
+        "static/**",
+        "custom/**",
+        "server/views/**"
+      ]
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/api/index.js"
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{{> header}}
+<main class="section-container click-history-page" data-link-uuid="{{linkUuid}}">
+  <h1>Click history</h1>
+  <p>Short link: <a href="{{shortUrl}}" target="_blank" rel="noopener">{{shortUrl}}</a></p>
+  <p>Destination domain: <strong>{{targetHost}}</strong></p>
+  <p id="history-status" role="status" aria-live="polite">Loading recent visits…</p>
+  <div class="table-wrapper">
+    <table class="data-table">
+      <thead><tr><th>Time</th><th>Visitor</th><th>Country</th><th>Device</th><th>Browser</th><th>OS</th><th>Referrer</th><th>UTM campaign</th></tr></thead>
+      <tbody id="history-rows"><tr><td colspan="8">Loading…</td></tr></tbody>
+    </table>
+  </div>
+  <div class="history-pagination" aria-label="Click history pages">
+    <button id="history-previous" type="button" disabled>Previous</button>
+    <span id="history-page" aria-live="polite">Page 1</span>
+    <button id="history-next" type="button" disabled>Next</button>
+  </div>
+  <p class="description">Detailed history does not store raw visitor IP addresses. Recognised crawlers are classified separately from human visits.</p>
+</main>
+{{> footer}}
+<script src="/scripts/click-history.js" defer></script>

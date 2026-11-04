@@ -1,0 +1,85 @@
+{{> header}}
+<main class="section-container admin-settings-page">
+  <h1>Advertising & Redirect Settings</h1>
+  <p>Control the visitor waiting page and advertising placements. The countdown is only a loading opportunity; it never verifies ad delivery or requires an ad click.</p>
+  <section class="settings-panel">
+    <h2>Redirect behaviour</h2>
+    <label>Maximum allowed countdown (seconds)
+      <input id="countdown-max-seconds" type="number" min="0" max="30" step="1" value="30" required />
+    </label>
+    <label>Countdown duration (seconds)
+      <input id="countdown-seconds" type="number" min="0" max="30" step="1" value="12" required />
+    </label>
+    <p class="description">Default is 12 seconds. The administrator can set a maximum from 0–30 seconds. Zero disables the wait.</p>
+    <label>Safety message
+      <input id="safety-message" type="text" maxlength="300" value="Always check the destination before proceeding." />
+    </label>
+  </section>
+  <section class="settings-panel">
+    <h2>Monetag and advertising placements</h2>
+    <p>Enable only the formats configured in your Monetag publisher account. Paste the exact ad tag supplied by the provider. Each enabled code block is included once on the waiting page.</p>
+    <div class="ad-config-grid">
+      <article class="ad-config" data-format="vignette">
+        <label class="checkbox"><input class="enabled" type="checkbox" /> Vignette Banner <span class="tag">Recommended default</span></label>
+        <p class="description">Native-style overlay that may appear on page visit. Its own Close and Continue controls belong to Monetag.</p>
+        <label>Zone ID <input class="zone-id" type="text" maxlength="255" /></label>
+        <label>Placement <select class="placement"><option value="head">Head (recommended)</option><option value="top">Top</option><option value="middle">Middle</option><option value="bottom">Bottom</option></select></label>
+        <label>Ad tag / code <textarea class="code" rows="5" spellcheck="false"></textarea></label>
+      </article>
+      <article class="ad-config" data-format="onclick">
+        <label class="checkbox"><input class="enabled" type="checkbox" /> OnClick / Popunder</label>
+        <p class="description">May open an advertising tab after a visitor interaction; browser popup rules apply.</p>
+        <label>Zone ID <input class="zone-id" type="text" maxlength="255" /></label>
+        <label>Placement <select class="placement"><option value="head">Head</option><option value="top">Top</option><option value="middle" selected>Body</option><option value="bottom">Bottom</option></select></label>
+        <label>Ad tag / code <textarea class="code" rows="5" spellcheck="false"></textarea></label>
+      </article>
+      <article class="ad-config" data-format="in_page_push">
+        <label class="checkbox"><input class="enabled" type="checkbox" /> In-Page Push</label>
+        <p class="description">Notification-style advertising displayed within the page.</p>
+        <label>Zone ID <input class="zone-id" type="text" maxlength="255" /></label>
+        <label>Placement <select class="placement"><option value="head">Head</option><option value="top">Top</option><option value="middle" selected>Body</option><option value="bottom">Bottom</option></select></label>
+        <label>Ad tag / code <textarea class="code" rows="5" spellcheck="false"></textarea></label>
+      </article>
+      <article class="ad-config" data-format="banner">
+        <label class="checkbox"><input class="enabled" type="checkbox" /> Banner advertisement</label>
+        <p class="description">Standard visual banner placement inside the waiting page.</p>
+        <label>Zone ID <input class="zone-id" type="text" maxlength="255" /></label>
+        <label>Placement <select class="placement"><option value="head">Head</option><option value="top">Top</option><option value="middle" selected>Body</option><option value="bottom">Bottom</option></select></label>
+        <label>Ad tag / code <textarea class="code" rows="5" spellcheck="false"></textarea></label>
+      </article>
+      <article class="ad-config" data-format="direct_link">
+        <label class="checkbox"><input class="enabled" type="checkbox" /> Direct Link</label>
+        <p class="description">A separate sponsored link that opens independently; it is never the Get Link destination.</p>
+        <label>Zone ID <input class="zone-id" type="text" maxlength="255" /></label>
+        <label>Placement <select class="placement"><option value="top">Top</option><option value="middle" selected>Middle</option><option value="bottom">Bottom</option></select></label>
+        <label>Sponsored destination URL <input class="destination-url" type="url" maxlength="2040" placeholder="https://..." /></label>
+        <label>Link label <input class="label" type="text" maxlength="120" placeholder="Visit sponsored link" /></label>
+        <p class="description">This is a separate sponsored link. It never replaces the user's Get Link destination.</p>
+      </article>
+      <article class="ad-config" data-format="custom_html">
+        <label class="checkbox"><input class="enabled" type="checkbox" /> Custom HTML advertisement</label>
+        <p class="description">Administrator-supplied HTML shown in an isolated sandboxed frame.</p>
+        <label>Placement <select class="placement"><option value="top">Top</option><option value="middle" selected>Middle</option><option value="bottom">Bottom</option></select></label>
+        <label>Custom HTML <textarea class="code" rows="7" spellcheck="false"></textarea></label>
+        <p class="description">Custom HTML runs inside a sandboxed iframe without same-origin access. Only administrators should configure this code.</p>
+      </article>
+    </div>
+  </section>
+  <div class="settings-actions">
+    <button id="save-ad-settings" class="primary" type="button">Save settings</button>
+    <a class="button" href="/advertising-preview" target="_blank" rel="noopener">Preview waiting page</a>
+    <span id="settings-status" role="status" aria-live="polite"></span>
+  </div>
+  <section class="settings-panel">
+    <h2>Important</h2>
+    <ul>
+      <li>The visitor can continue as soon as the countdown reaches zero, even when no advertisement is available or an ad blocker is active.</li>
+      <li>Monetag's own Vignette overlay controls its own Close and Continue buttons. This application does not attempt to detect whether the overlay was completed.</li>
+      <li>Ad scripts supplied here execute on human waiting pages. Use code only from a trusted advertising provider.</li>
+      <li>Do not paste duplicate tags for the same zone into multiple formats or placements.</li>
+      <li>Direct Link is an independent sponsored placement, not the final short-link destination.</li>
+    </ul>
+  </section>
+</main>
+{{> footer}}
+<script src="/scripts/ads-admin.js" defer></script>

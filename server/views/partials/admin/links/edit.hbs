@@ -1,0 +1,148 @@
+<td class="content">
+  {{#if id}}
+    <form 
+      id="edit-form-{{id}}"
+      hx-patch="/api/links/admin/{id}"
+      hx-ext="path-params"
+      hx-vals='{"id":"{{id}}"}' 
+      hx-select="form"
+      hx-swap="outerHTML"
+      hx-sync="this:replace"
+      class="{{class}}"
+    >
+      <div>
+        <label class="{{#if errors.target}}error{{/if}}">
+          Target:
+          <input 
+            id="edit-target-{{id}}"
+            name="target" 
+            type="text" 
+            placeholder="Target..." 
+            required="true"
+            value="{{target}}"
+            hx-preserve="true"
+          />
+          {{#if errors.target}}<p class="error">{{errors.target}}</p>{{/if}}
+        </label>
+        <label class="{{#if errors.address}}error{{/if}}">
+          <span id="edit-link-domain-{{id}}" hx-preserve="true">{{domain}}/</span>
+          <input 
+            id="edit-address-{{id}}"
+            name="address" 
+            type="text" 
+            placeholder="Custom URL..." 
+            required="true"
+            value="{{address}}"
+            hx-preserve="true"
+          />
+          {{#if errors.address}}<p class="error">{{errors.address}}</p>{{/if}}
+        </label>
+        <label class="{{#if errors.password}}error{{/if}}">
+          Password:
+          <input 
+            id="edit-password-{{id}}"
+            name="password" 
+            type="password" 
+            placeholder="Password..." 
+            value="{{#if password}}••••••••{{/if}}"
+            hx-preserve="true"
+          />
+          {{#if errors.password}}<p class="error">{{errors.password}}</p>{{/if}}
+        </label>
+      </div>
+      <div>
+        <label class="{{#if errors.description}}error{{/if}}">
+          Description:
+          <input 
+            id="edit-description-{{id}}"
+            name="description" 
+            type="text" 
+            placeholder="Description..." 
+            value="{{description}}"
+            hx-preserve="true"
+          />
+          {{#if errors.description}}<p class="error">{{errors.description}}</p>{{/if}}
+        </label>
+        <label class="{{#if errors.expire_in}}error{{/if}}">
+          Expire in:
+          <input 
+            id="edit-expire_in-{{id}}"
+            name="expire_in" 
+            type="text" 
+            placeholder="2 minutes/hours/days"
+            value="{{relative_expire_in}}"
+            hx-preserve="true"
+          />
+          {{#if errors.expire_in}}<p class="error">{{errors.expire_in}}</p>{{/if}}
+        </label>
+      </div>
+      <div>
+        <label>Maximum clicks (optional):
+          <input name="click_limit" type="number" min="1" max="100000000" value="{{click_limit}}" placeholder="Unlimited" />
+        </label>
+        <label>External preview image URL:
+          <input name="preview_image_url" type="url" maxlength="2040" value="{{preview_image_url}}" placeholder="https://.../image.jpg" />
+        </label>
+        <label>External preview video URL:
+          <input name="preview_video_url" type="url" maxlength="2040" value="{{preview_video_url}}" placeholder="https://.../video.mp4" />
+        </label>
+        <label>Video MIME type:
+          <input name="preview_video_mime_type" maxlength="128" value="{{preview_video_mime_type}}" placeholder="video/mp4" />
+        </label>
+        <label>Social preview metadata:
+          <select name="preview_enabled">
+            <option value="true" {{#if preview_enabled}}selected{{/if}}>Enabled</option>
+            <option value="false" {{#unless preview_enabled}}selected{{/unless}}>Disabled</option>
+          </select>
+        </label>
+        <label>Preview title:
+          <input name="preview_title" maxlength="300" value="{{preview_title}}" />
+        </label>
+        <label>Preview description:
+          <input name="preview_description" maxlength="2000" value="{{preview_description}}" />
+        </label>
+        <label>Image alt text:
+          <input name="preview_image_alt" maxlength="500" value="{{preview_image_alt}}" />
+        </label>
+      </div>
+      <div>
+        <button 
+          type="button"
+          onclick="
+            const tr = closest('tr');
+            if (!tr) return;
+            tr.classList.remove('show');
+            tr.removeChild(tr.querySelector('.content'));
+          "
+        >
+          Close
+        </button>
+        <a class="button" href="/preview/{{id}}" target="_blank" rel="noopener">Preview tester</a>
+        <a class="button" href="/link/{{id}}/history" target="_blank" rel="noopener">Click history</a>
+        <button type="submit" class="primary">
+          <span class="reload">
+            {{> icons/reload}}
+          </span>
+          <span class="loader">
+            {{> icons/spinner}}
+          </span>
+          Update
+        </button>
+      </div>
+      <div class="response">
+        {{#if error}}
+          {{#unless errors}}
+            <p class="error">{{error}}</p>
+          {{/unless}}
+        {{else if success}}
+          <p class="success">{{success}}</p>
+        {{/if}}
+      </div>
+      <template>
+        {{> admin/links/tr}}
+      </template>
+    </form>
+  {{else}}
+    <p class="no-data">No link was found.</p>
+  {{/if}}
+</td>

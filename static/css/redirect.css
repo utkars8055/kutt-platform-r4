@@ -1,0 +1,28 @@
+:root { color-scheme: light dark; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+* { box-sizing: border-box; }
+body { margin: 0; min-height: 100vh; background: #101827; color: #f8fafc; display: flex; justify-content: center; padding: 34px 16px; }
+.redirect-shell { width: min(100%, 720px); margin: auto; }
+.brand { text-align: center; font-weight: 800; letter-spacing: .04em; margin-bottom: 22px; color: #cbd5e1; }
+.redirect-card { text-align: center; border: 1px solid #334155; background: #172337; border-radius: 22px; padding: clamp(24px, 6vw, 48px); box-shadow: 0 22px 70px #02061766; }
+.eyebrow { color: #93c5fd; font-size: 11px; letter-spacing: .16em; font-weight: 800; }
+h1 { font-size: clamp(27px, 5vw, 40px); margin: 14px 0 10px; }
+.intro { color: #cbd5e1; margin: 0; }
+.countdown { display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 30px auto 24px; width: 150px; height: 150px; border: 5px solid #60a5fa; border-radius: 50%; }
+#countdown-number { font-size: 46px; font-weight: 800; line-height: 1.1; font-variant-numeric: tabular-nums; }
+#countdown-label { color: #cbd5e1; font-size: 11px; margin-top: 6px; }
+#get-link { width: min(100%, 340px); border: 0; border-radius: 12px; padding: 16px 22px; font-weight: 800; font-size: 15px; color: #0b1220; background: #93c5fd; cursor: pointer; }
+#get-link:disabled { opacity: .45; cursor: not-allowed; }
+#get-link span { margin-left: 8px; }
+.destination { overflow-wrap: anywhere; color: #cbd5e1; margin: 22px 0 8px; font-size: 13px; }
+.destination strong { color: #fff; }
+.safety { color: #94a3b8; font-size: 12px; margin-bottom: 0; }
+.ad-placement { margin: 18px 0; text-align: center; }
+.ad-label, .sponsored-link span, footer { color: #94a3b8; font-size: 11px; }
+.sponsored-link { display: flex; justify-content: center; gap: 12px; align-items: center; padding: 12px; border: 1px solid #334155; border-radius: 12px; }
+.sponsored-link a { color: #bfdbfe; }
+.custom-ad iframe { width: 100%; min-height: 90px; border: 0; background: transparent; }
+footer { text-align: center; line-height: 1.6; margin: 20px 12px; }
+@media (max-width: 480px) { body { padding: 16px 12px; } .redirect-card { border-radius: 16px; } }
+
+.js-fallback { margin: 0.75rem 0; font-size: 0.9rem; }
+.js-fallback a { text-decoration: underline; }
