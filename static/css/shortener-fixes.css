@@ -1,12 +1,15 @@
 /* -------------------------------------------------------------------------
-   SHORTENER RESULT FIX
+   SHORTENER RESULT FIX AND POLISH
    The refresh layer sets a 40px minimum height on every button, which made
    the 36px copy control taller than its box and let it run into the URL.
-   These rules keep the copy control at its intended size and beside the URL.
+   The rules below fix that and tighten the result and input states.
    ------------------------------------------------------------------------- */
+
+/* Copy control: fixed size, never shrinks, never overlaps the URL. */
 .clipboard button {
   min-width: 0;
   min-height: 0;
+  transition: background-color .16s ease, box-shadow .16s ease, transform .16s ease;
 }
 
 main #shorturl {
@@ -21,8 +24,85 @@ main #shorturl .clipboard {
   margin: 0;
 }
 
+main #shorturl .clipboard button {
+  background-color: #e6f5ee;
+  box-shadow: none;
+  border: 1px solid #cfe9dc;
+}
+
+main #shorturl .clipboard button:hover,
+main #shorturl .clipboard button:focus-visible {
+  background-color: #d6efe3;
+  box-shadow: 0 2px 8px rgba(24, 39, 58, .08);
+}
+
 main #shorturl h1.link {
   min-width: 0;
   flex: 0 1 auto;
   overflow-wrap: anywhere;
+  padding-bottom: 2px;
+  border-bottom: 1px solid #d5e2f5;
+  transition: color .16s ease, border-color .16s ease;
+}
+
+main #shorturl h1.link:hover {
+  color: #214ca9;
+  border-bottom-color: #2859c5;
+  opacity: 1;
+}
+
+/* Shortener input: clearer focus ring and a softer resting state. */
+main form input#target {
+  transition: border-color .16s ease, box-shadow .16s ease, background-color .16s ease;
+}
+
+main form input#target:hover {
+  background-color: #fff;
+  border-color: #c7d3e2;
+}
+
+main form input#target:focus {
+  outline: none;
+  background-color: #fff;
+  border-color: #8aa9e8;
+  box-shadow: 0 0 0 4px rgba(40, 89, 197, .12);
+}
+
+/* Advanced options: consistent field spacing on desktop and phones. */
+#advanced-options label {
+  font-size: 13px;
+}
+
+#advanced-options input:not([type="checkbox"]),
+#advanced-options select {
+  min-height: 40px;
+}
+
+/* Error text: calm, readable, aligned with the field it belongs to. */
+main form p.error {
+  color: #c24145;
+  font-weight: 500;
+}
+
+/* Keyboard focus is always visible. */
+main form button.submit:focus-visible,
+main #shorturl .clipboard button:focus-visible {
+  outline: 3px solid rgba(40, 89, 197, .3);
+  outline-offset: 2px;
+}
+
+@media (max-width: 480px) {
+  main #shorturl {
+    gap: 10px;
+  }
+
+  main #shorturl .clipboard {
+    flex-basis: 32px;
+    width: 32px;
+    height: 32px;
+  }
+
+  main #shorturl h1.link {
+    font-size: 20px;
+  }
 }
