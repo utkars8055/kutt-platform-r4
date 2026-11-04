@@ -1,7 +1,7 @@
 {{> header}}
 <main class="section-container admin-settings-page">
   <h1>Advertising & Redirect Settings</h1>
-  <p>Control the visitor waiting page and advertising placements. The countdown is only a loading opportunity; it never verifies ad delivery or requires an ad click.</p>
+  <p>Control the visitor waiting page, advertising placements and who can create accounts and links. The countdown is only a loading opportunity; it never verifies ad delivery or requires an ad click.</p>
   <section class="settings-panel">
     <h2>Redirect behaviour</h2>
     <label>Maximum allowed countdown (seconds)
@@ -14,6 +14,12 @@
     <label>Safety message
       <input id="safety-message" type="text" maxlength="300" value="Always check the destination before proceeding." />
     </label>
+  </section>
+  <section class="settings-panel">
+    <h2>Account and link creation</h2>
+    <p class="description">Turn these off to restrict who can create accounts and links. Administrators can always create links. Existing accounts and links are not affected.</p>
+    <label class="checkbox"><input id="allow-public-signup" type="checkbox" checked /> Allow public account signup</label>
+    <label class="checkbox"><input id="allow-user-links" type="checkbox" checked /> Allow non-admin users and visitors to create links</label>
   </section>
   <section class="settings-panel">
     <h2>Monetag and advertising placements</h2>
