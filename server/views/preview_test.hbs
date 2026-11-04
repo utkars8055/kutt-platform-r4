@@ -1,7 +1,7 @@
 {{> header}}
 <main class="section-container preview-test-page">
   <h1>Social preview tester</h1>
-  <p>This page shows the metadata saved for your short link. The image is loaded directly by your browser from its external host; Kutt does not download or proxy it.</p>
+  <p>This page shows the metadata saved for your short link. The image is loaded directly from its external host. When you save a sharing link, Kutt checks the public page and resolves its image URL; it does not store or proxy the image.</p>
   {{#unless hasPreview}}<p class="description">No social-preview metadata is configured yet. Edit this short link and add external image or video metadata.</p>{{/unless}}
   <section class="preview-card">
     {{#if preview.image_url}}<img src="{{preview.image_url}}" alt="{{preview.image_alt}}" referrerpolicy="no-referrer" />{{/if}}
