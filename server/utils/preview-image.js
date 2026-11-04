@@ -10,7 +10,9 @@ const IMAGE_TYPES = new Set([
   "image/bmp",
   "image/gif",
   "image/jpeg",
+  "image/jpg",
   "image/png",
+  "image/x-png",
   "image/webp",
 ]);
 
