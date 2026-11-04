@@ -28,7 +28,13 @@ async function resolvePreviewImageInput(req, res, existingLinkId) {
   if (!req.body?.preview_image_url) return;
   if (existingLinkId) {
     const existingPreview = await query.preview.find(existingLinkId);
-    if (existingPreview?.image_url === req.body.preview_image_url) return;
+    let looksLikeDirectImage = false;
+    try {
+      looksLikeDirectImage = /\\.(?:avif|bmp|gif|jpe?g|png|webp)$/i.test(new URL(req.body.preview_image_url).pathname);
+    } catch {
+      // Invalid URLs are handled by the resolver below.
+    }
+    if (existingPreview?.image_url === req.body.preview_image_url && looksLikeDirectImage) return;
   }
   try {
     req.body.preview_image_url = await resolvePreviewImageUrl(req.body.preview_image_url);
