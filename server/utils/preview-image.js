@@ -4,7 +4,8 @@ const net = require("node:net");
 
 const MAX_HTML_BYTES = 512 * 1024;
 const REQUEST_TIMEOUT_MS = 8000;
-const MAX_REDIRECTS = 5;
+const MAX_RESOLVE_TIME_MS = 7000;
+const MAX_REDIRECTS = 4;
 const IMAGE_TYPES = new Set([
   "image/avif",
   "image/bmp",
@@ -121,7 +122,7 @@ async function getPublicAddress(hostname) {
   return records[0];
 }
 
-function requestUrl(url) {
+function requestUrl(url, timeoutMs = REQUEST_TIMEOUT_MS) {
   return new Promise(async (resolve, reject) => {
     let address;
     try {
@@ -146,6 +147,7 @@ function requestUrl(url) {
       }
     };
 
+    const requestTimeout = Math.max(1, Math.min(REQUEST_TIMEOUT_MS, timeoutMs));
     const request = https.get(url, {
       lookup,
       servername: url.hostname,
@@ -154,7 +156,7 @@ function requestUrl(url) {
         "User-Agent": "Mozilla/5.0 (compatible; KuttPreviewResolver/1.0)",
         Range: "bytes=0-" + (MAX_HTML_BYTES - 1),
       },
-      timeout: REQUEST_TIMEOUT_MS,
+      timeout: requestTimeout,
     }, response => {
       const status = response.statusCode || 0;
       if ([301, 302, 303, 307, 308].includes(status)) {
@@ -195,18 +197,22 @@ function requestUrl(url) {
       response.on("error", error => finish(error));
     });
 
-    request.setTimeout(REQUEST_TIMEOUT_MS, () => request.destroy(new Error("Image host timed out.")));
+    request.setTimeout(requestTimeout, () => request.destroy(new Error("Image host timed out.")));
     request.on("error", error => finish(error));
   });
 }
 
 async function resolvePreviewImageUrl(input) {
   let currentUrl = parseSafeUrl(input);
+  const deadline = Date.now() + MAX_RESOLVE_TIME_MS;
 
   for (let hop = 0; hop <= MAX_REDIRECTS; hop += 1) {
+    const remainingMs = deadline - Date.now();
+    if (remainingMs <= 0) throw new Error("The image provider took too long to respond. Try a direct image URL.");
+
     let response;
     try {
-      response = await requestUrl(currentUrl);
+      response = await requestUrl(currentUrl, remainingMs);
     } catch (error) {
       if (error.message && /safe public|publicly accessible|HTTPS address|valid image URL/.test(error.message)) throw error;
       throw new Error("The image link could not be checked. Make sure it is public and try again.");
