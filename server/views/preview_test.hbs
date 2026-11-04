@@ -4,7 +4,8 @@
   <p>This page shows the metadata saved for your short link. The image is loaded directly from its external host. When you save a sharing link, Kutt checks the public page and resolves its image URL; it does not store or proxy the image.</p>
   {{#unless hasPreview}}<p class="description">No social-preview metadata is configured yet. Edit this short link and add external image or video metadata.</p>{{/unless}}
   <section class="preview-card">
-    {{#if preview.image_url}}<img src="{{preview.image_url}}" alt="{{preview.image_alt}}" referrerpolicy="no-referrer" />{{/if}}
+    {{#if preview.image_url}}<img src="{{preview.image_url}}" alt="{{preview.image_alt}}" referrerpolicy="no-referrer" onerror="this.hidden=true; this.nextElementSibling.hidden=false;" />
+    <p class="error" hidden>The image host did not let this browser load the preview. Try another public image URL.</p>{{/if}}
     <h2>{{preview.title}}</h2>
     <p>{{preview.description}}</p>
     <small>{{shortUrl}}</small>
