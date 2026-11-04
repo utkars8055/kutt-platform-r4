@@ -62,7 +62,7 @@ function getAttribute(tag, name) {
 
 function extractImageFromHtml(html, baseUrl) {
   const candidates = [];
-  const metaTags = String(html || "").match(/<meta\\b[^>]*>/gi) || [];
+  const metaTags = String(html || "").match(/<meta\b[^>]*>/gi) || [];
 
   for (const tag of metaTags) {
     const key = (getAttribute(tag, "property") || getAttribute(tag, "name")).toLowerCase();
