@@ -2547,6 +2547,7 @@ main form input#target {
 }
 main form input#target::placeholder { color: #98a3b3; font-size: 15px; }
 main form button.submit {
+  box-sizing: border-box;
   top: 8px;
   right: 8px;
   width: 42px;
