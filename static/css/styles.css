@@ -2718,3 +2718,487 @@ footer a { color: #64748b; }
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
 }
+
+
+/* -------------------------------------------------------------------------
+   MOBILE CARD LAYOUT — TABLES AND ADMIN FORMS
+   Converts wide management tables into readable stacked records on phones.
+   Desktop/tablet table layout and all HTMX controls remain unchanged.
+   ------------------------------------------------------------------------- */
+@media (max-width: 768px) {
+  #main-table-wrapper {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    padding: 0 14px;
+    margin: 34px auto 44px;
+    align-items: stretch;
+  }
+
+  #main-table-wrapper > table {
+    display: flex;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
+    border-radius: 12px;
+  }
+
+  #main-table-wrapper table thead,
+  #main-table-wrapper table tbody,
+  #main-table-wrapper table tfoot {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  /* Keep filters, tabs and paging controls; remove the desktop column headings. */
+  #main-table-wrapper table thead > tr:not(.controls):not(.category) {
+    display: none;
+  }
+  #main-table-wrapper table thead tr.category {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    padding: 12px;
+  }
+  #main-table-wrapper table tr.category th.category-total,
+  #main-table-wrapper table tr.category th.category-tab {
+    flex: 1 1 100%;
+    width: 100%;
+    padding: 0;
+    justify-content: flex-start;
+  }
+  #main-table-wrapper table tr.category th.category-tab nav.tab {
+    display: flex;
+    width: 100%;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  #main-table-wrapper table tr.category th.category-tab nav.tab a {
+    margin: 0;
+    flex: 1 1 auto;
+    min-width: 68px;
+    padding: 8px 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 7px;
+  }
+
+  #main-table-wrapper table thead tr.controls,
+  #main-table-wrapper table tfoot tr.controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px;
+    width: 100%;
+    padding: 12px;
+  }
+  #main-table-wrapper table tr.controls th,
+  #main-table-wrapper table tr.controls td {
+    flex: 1 1 100%;
+    width: 100%;
+    min-width: 0;
+    padding: 0;
+    border: 0;
+  }
+  #main-table-wrapper table tr.controls th.search {
+    display: block;
+  }
+  #main-table-wrapper table tr.controls th.search input.search,
+  #main-table-wrapper table tr.controls th.filters input.search,
+  #main-table-wrapper table tr.controls th.filters select {
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+  }
+  #main-table-wrapper table tr.controls th.filters > div {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    width: 100%;
+    gap: 8px;
+    margin: 0 0 8px;
+  }
+  #main-table-wrapper table tr.controls th.filters > div:last-child {
+    margin-bottom: 0;
+  }
+  #main-table-wrapper table tr.controls .search-input-wrapper {
+    display: flex;
+    width: 100%;
+    min-width: 0;
+    margin: 0;
+  }
+  #main-table-wrapper table tr.controls .search-input-wrapper input {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  #main-table-wrapper table tr.controls .search-input-wrapper button.clear {
+    flex: 0 0 34px;
+    width: 34px;
+    min-width: 34px;
+    padding: 6px;
+  }
+  #main-table-wrapper table tr.controls th.nav {
+    display: flex;
+    flex: 1 1 100%;
+    justify-content: space-between;
+    gap: 8px;
+    width: 100%;
+    min-width: 0;
+  }
+  #main-table-wrapper table .limit,
+  #main-table-wrapper table .pagination {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  #main-table-wrapper table button.nav {
+    width: 34px;
+    min-width: 34px;
+    height: 34px;
+    margin: 0;
+    padding: 0;
+  }
+  #main-table-wrapper table .nav-divider {
+    height: 22px;
+    margin: 0 3px;
+  }
+
+  /* Each link/domain/user becomes an individual mobile card. */
+  #main-table-wrapper table tbody tr[id^="tr-"] {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(72px, auto);
+    grid-template-areas:
+      "primary primary"
+      "secondary secondary"
+      "tertiary tertiary"
+      "actions actions";
+    gap: 10px 12px;
+    width: 100%;
+    min-width: 0;
+    padding: 15px 14px;
+    border-bottom: 1px solid #e8edf3;
+    background: #fff;
+  }
+  #main-table-wrapper table tbody tr[id^="tr-"]:last-of-type {
+    border-bottom: 0;
+  }
+  #main-table-wrapper table tbody tr[id^="tr-"] > td {
+    display: block;
+    flex: none;
+    width: auto;
+    min-width: 0;
+    max-width: 100%;
+    padding: 0;
+    overflow: visible;
+    white-space: normal;
+    text-align: left;
+    font-size: 13px;
+    line-height: 1.45;
+  }
+  #main-table-wrapper table tbody tr[id^="tr-"] > td:before {
+    display: block;
+    margin: 0 0 3px;
+    color: #8a96a7;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .055em;
+    line-height: 1.3;
+    text-transform: uppercase;
+  }
+
+  /* Links table and admin links table. */
+  #main-table-wrapper table tbody tr[id^="tr-"]:has(> td.original-url) {
+    grid-template-areas:
+      "primary primary"
+      "secondary secondary"
+      "tertiary tertiary"
+      "actions actions";
+  }
+  #main-table-wrapper table tbody tr[id^="tr-"] > td.original-url {
+    grid-area: primary;
+    flex-direction: column;
+    align-items: flex-start;
+    overflow: visible;
+  }
+  #main-table-wrapper table tbody tr[id^="tr-"] > td.original-url:before {
+    content: "Destination URL";
+  }
+  #main-table-wrapper table tbody tr[id^="tr-"] > td.created-at {
+    grid-area: secondary;
+    display: block;
+    color: #405069;
+  }
+  #main-table-wrapper table tbody tr[id^="tr-"] > td.created-at:before {
+    content: "Created";
+  }
+  #main-table-wrapper table tbody tr[id^="tr-"] > td.short-link {
+    grid-area: tertiary;
+    display: block;
+    min-width: 0;
+    overflow: visible;
+  }
+  #main-table-wrapper table tbody tr[id^="tr-"] > td.short-link:before {
+    content: "Short link";
+  }
+  #main-table-wrapper table tbody tr[id^="tr-"] > td.views {
+    grid-area: secondary;
+    justify-self: end;
+    align-self: end;
+    min-width: 48px;
+    text-align: right;
+  }
+  #main-table-wrapper table tbody tr[id^="tr-"] > td.views:before {
+    content: "Views";
+    text-align: right;
+  }
+  #main-table-wrapper table tbody tr[id^="tr-"] > td.actions {
+    grid-area: actions;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 7px;
+    padding-top: 9px;
+    border-top: 1px solid #edf1f5;
+  }
+  #main-table-wrapper table tbody tr[id^="tr-"] > td.actions:before {
+    content: "Actions";
+    flex: 0 0 100%;
+  }
+  #main-table-wrapper table tbody tr[id^="tr-"] > td.actions a.button,
+  #main-table-wrapper table tbody tr[id^="tr-"] > td.actions button {
+    flex: 0 0 auto;
+    min-width: 32px;
+    width: auto;
+    min-height: 32px;
+    height: 32px;
+    margin: 0;
+    padding: 6px;
+    border-radius: 7px;
+  }
+  #main-table-wrapper table tbody tr[id^="tr-"] > td.actions a.button.preview,
+  #main-table-wrapper table tbody tr[id^="tr-"] > td.actions a.button.history {
+    padding: 0 9px;
+    font-size: 11px;
+  }
+  #main-table-wrapper table tbody tr[id^="tr-"] > td.actions svg {
+    width: 16px;
+    height: 16px;
+  }
+  #main-table-wrapper table tbody td.right-fade:after {
+    display: none;
+    content: none;
+  }
+  #main-table-wrapper table tbody tr[id^="tr-"] td a {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+  #main-table-wrapper table .short-link-wrapper {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    gap: 7px;
+  }
+  #main-table-wrapper table .short-link-wrapper > a,
+  #main-table-wrapper table td.short-link > a {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+  #main-table-wrapper table .clipboard {
+    flex: 0 0 27px;
+    width: 27px;
+    height: 27px;
+    margin: 0;
+  }
+
+  /* Admin users table: show account details as labeled fields. */
+  #main-table-wrapper table tbody tr[id^="tr-"]:has(> td.users-email) {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas:
+      "primary primary"
+      "secondary tertiary"
+      "fourth fifth"
+      "actions actions";
+  }
+  #main-table-wrapper table tbody tr[id^="tr-"] > td.users-email { grid-area: primary; }
+  #main-table-wrapper table tbody tr[id^="tr-"] > td.users-email:before { content: "User"; }
+  #main-table-wrapper table tbody tr[id^="tr-"] > td.users-id { grid-area: secondary; }
+  #main-table-wrapper table tbody tr[id^="tr-"] > td.users-id:before { content: "User ID"; }
+  #main-table-wrapper table tbody tr[id^="tr-"] > td.users-created-at { grid-area: tertiary; }
+  #main-table-wrapper table tbody tr[id^="tr-"] > td.users-created-at:before { content: "Created"; }
+  #main-table-wrapper table tbody tr[id^="tr-"] > td.users-verified { grid-area: fourth; }
+  #main-table-wrapper table tbody tr[id^="tr-"] > td.users-verified:before { content: "Verification"; }
+  #main-table-wrapper table tbody tr[id^="tr-"] > td.users-role { grid-area: fifth; }
+  #main-table-wrapper table tbody tr[id^="tr-"] > td.users-role:before { content: "Role"; }
+  #main-table-wrapper table tbody tr[id^="tr-"] > td.users-links-count { grid-area: tertiary; justify-self: end; text-align: right; }
+  #main-table-wrapper table tbody tr[id^="tr-"] > td.users-links-count:before { content: "Total links"; text-align: right; }
+  #main-table-wrapper table tbody tr[id^="tr-"] > td.users-actions { grid-area: actions; }
+
+  /* Admin domains table. */
+  #main-table-wrapper table tbody tr[id^="tr-"]:has(> td.domains-address) {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas:
+      "primary primary"
+      "secondary secondary"
+      "tertiary fourth"
+      "actions actions";
+  }
+  #main-table-wrapper table tbody tr[id^="tr-"] > td.domains-address { grid-area: primary; }
+  #main-table-wrapper table tbody tr[id^="tr-"] > td.domains-address:before { content: "Domain"; }
+  #main-table-wrapper table tbody tr[id^="tr-"] > td.domains-homepage { grid-area: secondary; }
+  #main-table-wrapper table tbody tr[id^="tr-"] > td.domains-homepage:before { content: "Homepage"; }
+  #main-table-wrapper table tbody tr[id^="tr-"] > td.domains-created-at { grid-area: tertiary; }
+  #main-table-wrapper table tbody tr[id^="tr-"] > td.domains-created-at:before { content: "Added"; }
+  #main-table-wrapper table tbody tr[id^="tr-"] > td.domains-links-count { grid-area: fourth; justify-self: end; text-align: right; }
+  #main-table-wrapper table tbody tr[id^="tr-"] > td.domains-links-count:before { content: "Total links"; text-align: right; }
+  #main-table-wrapper table tbody tr[id^="tr-"] > td.domains-id { display: none; }
+  #main-table-wrapper table tbody tr[id^="tr-"] > td.domains-actions { grid-area: actions; }
+
+  /* Inline edit forms must stack instead of forcing desktop-width fields. */
+  #main-table-wrapper table tbody tr.edit,
+  #main-table-wrapper table tbody tr.edit.show {
+    display: none;
+    width: 100%;
+    min-width: 0;
+    padding: 0;
+    background: #f8fafd;
+  }
+  #main-table-wrapper table tbody tr.edit.show { display: grid; grid-template-columns: minmax(0, 1fr); }
+  #main-table-wrapper table tbody tr.edit > td.content {
+    display: block;
+    grid-column: 1 / -1;
+    width: 100%;
+    min-width: 0;
+    padding: 15px;
+  }
+  #main-table-wrapper table tbody tr.edit td form { width: 100%; min-width: 0; }
+  #main-table-wrapper table tbody tr.edit td form > div {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+    width: 100%;
+    min-width: 0;
+  }
+  #main-table-wrapper table tbody tr.edit label {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    margin: 0 0 10px;
+  }
+  #main-table-wrapper table tbody tr.edit input,
+  #main-table-wrapper table tbody tr.edit input[name="target"],
+  #main-table-wrapper table tbody tr.edit input[name="description"],
+  #main-table-wrapper table tbody tr.edit input + p,
+  #main-table-wrapper table tbody tr.edit input[name="target"] + p,
+  #main-table-wrapper table tbody tr.edit input[name="description"] + p,
+  #main-table-wrapper table tbody tr.edit select {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+  #main-table-wrapper table tbody tr.edit td form > div:last-of-type {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+  }
+  #main-table-wrapper table tbody tr.edit button,
+  #main-table-wrapper table tbody tr.edit a.button {
+    min-height: 36px;
+    height: auto;
+    margin: 0;
+    padding: 8px 11px;
+  }
+
+  /* Admin advertising/settings page: one column, no URL or code overflow. */
+  main.admin-settings-page {
+    display: flex;
+    align-items: stretch;
+    width: calc(100% - 28px);
+    max-width: 1100px;
+    min-width: 0;
+    padding: 0;
+    margin: 24px auto 42px;
+  }
+  .admin-settings-page > h1,
+  .admin-settings-page > p,
+  .admin-settings-page > .settings-panel,
+  .admin-settings-page > .settings-actions {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+  }
+  .admin-settings-page > h1 {
+    font-size: 24px;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+  }
+  .admin-settings-page > p { font-size: 13px; }
+  .admin-settings-page .settings-panel {
+    width: 100%;
+    min-width: 0;
+    padding: 15px;
+    margin: 12px 0;
+  }
+  .admin-settings-page .ad-config-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+    width: 100%;
+    min-width: 0;
+  }
+  .admin-settings-page .ad-config {
+    width: 100%;
+    min-width: 0;
+    padding: 13px;
+  }
+  .admin-settings-page .ad-config label {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .admin-settings-page .ad-config input:not([type="checkbox"]),
+  .admin-settings-page .ad-config select,
+  .admin-settings-page .ad-config textarea,
+  .admin-settings-page .settings-panel > label input {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    margin-top: 6px;
+    box-sizing: border-box;
+  }
+  .admin-settings-page .ad-config textarea {
+    min-height: 112px;
+    resize: vertical;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+  .admin-settings-page .settings-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 9px;
+  }
+  .admin-settings-page .settings-actions > * {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+  }
+}
+
+@media (max-width: 420px) {
+  #main-table-wrapper { padding: 0 10px; }
+  #main-table-wrapper > table { border-radius: 10px; }
+  #main-table-wrapper table tbody tr[id^="tr-"] { padding: 13px 11px; }
+  #main-table-wrapper table tr.controls,
+  #main-table-wrapper table tr.category { padding: 10px; }
+  #main-table-wrapper table tr.controls th.nav button.nav { width: 32px; min-width: 32px; }
+  #main-table-wrapper table tbody tr[id^="tr-"] > td.actions { gap: 6px; }
+  main.admin-settings-page { width: calc(100% - 22px); }
+}
