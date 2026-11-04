@@ -7,6 +7,7 @@ const asyncHandler = require("../utils/asyncHandler");
 const locals = require("../handlers/locals.handler");
 const link = require("../handlers/links.handler");
 const auth = require("../handlers/auth.handler");
+const access = require("../handlers/access.handler");
 const env = require("../env");
 
 const router = Router();
@@ -37,6 +38,7 @@ router.post(
   locals.viewTemplate("partials/shortener"),
   asyncHandler(auth.apikey),
   asyncHandler(env.DISALLOW_ANONYMOUS_LINKS ? auth.jwt : auth.jwtLoose),
+  asyncHandler(access.linkCreation),
   locals.createLink,
   helpers.rateLimit({ window: 60, limit: 30 }),
   validators.createLink,
