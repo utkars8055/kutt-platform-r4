@@ -82,6 +82,7 @@
         </label>
         <label>Preview image or sharing URL:
           <input name="preview_image_url" type="url" maxlength="2040" value="{{preview_image_url}}" placeholder="https://imgur.com/... or https://.../image.jpg" />
+          {{#if errors.preview_image_url}}<p class="error">{{errors.preview_image_url}}</p>{{/if}}
         </label>
         <label>External preview video URL:
           <input name="preview_video_url" type="url" maxlength="2040" value="{{preview_video_url}}" placeholder="https://.../video.mp4" />
