@@ -3,11 +3,7 @@
   "functions": {
     "api/index.js": {
       "maxDuration": 60,
-      "includeFiles": [
-        "static/**",
-        "custom/**",
-        "server/views/**"
-      ]
+      "includeFiles": "{static/**,custom/**,server/views/**}"
     }
   },
   "rewrites": [
