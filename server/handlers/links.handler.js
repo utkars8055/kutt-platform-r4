@@ -30,7 +30,7 @@ async function resolvePreviewImageInput(req, res, existingLinkId) {
     const existingPreview = await query.preview.find(existingLinkId);
     let looksLikeDirectImage = false;
     try {
-      looksLikeDirectImage = /\\.(?:avif|bmp|gif|jpe?g|png|webp)$/i.test(new URL(req.body.preview_image_url).pathname);
+      looksLikeDirectImage = /\.(?:avif|bmp|gif|jpe?g|png|webp)$/i.test(new URL(req.body.preview_image_url).pathname);
     } catch {
       // Invalid URLs are handled by the resolver below.
     }
