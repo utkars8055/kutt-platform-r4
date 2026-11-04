@@ -5,6 +5,7 @@ const helpers = require("../handlers/helpers.handler");
 const asyncHandler = require("../utils/asyncHandler");
 const locals = require("../handlers/locals.handler");
 const auth = require("../handlers/auth.handler");
+const access = require("../handlers/access.handler");
 const utils = require("../utils");
 const env = require("../env");
 
@@ -25,6 +26,7 @@ router.post(
   "/signup",
   locals.viewTemplate("partials/auth/form"),
   auth.featureAccess([!env.DISALLOW_REGISTRATION, env.MAIL_ENABLED]),
+  asyncHandler(access.signup),
   validators.signup,
   asyncHandler(helpers.verify),
   helpers.rateLimit({ window: 60, limit: 5 }),
