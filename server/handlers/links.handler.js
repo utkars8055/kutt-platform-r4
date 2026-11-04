@@ -656,6 +656,7 @@ async function redirect(req, res, next) {
       res.setHeader("Cache-Control", "public, max-age=300, stale-while-revalidate=600");
       res.setHeader("X-Robots-Tag", "noindex, nofollow");
       res.status(200).render("social_preview", {
+        layout: false,
         preview: {
           ...preview,
           title: preview.title || link.description || env.SITE_NAME,
@@ -714,6 +715,8 @@ async function redirect(req, res, next) {
   res.setHeader("Cache-Control", "no-store, private");
   res.setHeader("Referrer-Policy", "no-referrer");
   return res.render("interstitial", {
+    // This view is a complete HTML document and must not be wrapped in layout.hbs.
+    layout: false,
     site_name: env.SITE_NAME,
     destination: link.target,
     destinationHost,
@@ -750,6 +753,7 @@ async function redirectPreview(req, res) {
   let destinationHost = "example.com";
   const adRenderData = buildAdRenderData(settings);
   return res.render("interstitial", {
+    layout: false,
     site_name: env.SITE_NAME,
     destination: "https://example.com/your-destination",
     destinationHost,
