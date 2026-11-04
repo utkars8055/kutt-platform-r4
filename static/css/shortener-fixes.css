@@ -1,8 +1,5 @@
 /* -------------------------------------------------------------------------
-   SHORTENER RESULT FIX AND POLISH
-   The refresh layer sets a 40px minimum height on every button, which made
-   the 36px copy control taller than its box and let it run into the URL.
-   The rules below fix that and tighten the result and input states.
+   SHORTENER RESULT FIX AND POLISH (round 1)
    ------------------------------------------------------------------------- */
 
 /* Copy control: fixed size, never shrinks, never overlaps the URL. */
@@ -104,5 +101,88 @@ main #shorturl .clipboard button:focus-visible {
 
   main #shorturl h1.link {
     font-size: 20px;
+  }
+}
+
+/* -------------------------------------------------------------------------
+   UI POLISH (round 2)
+   Restrained refinements to shared controls. Nothing here changes layout
+   structure, routes or behaviour.
+   ------------------------------------------------------------------------- */
+
+/* Shared focus treatment for links and controls that are not buttons. */
+a:focus-visible,
+button.link:focus-visible,
+label.checkbox input[type="checkbox"]:focus-visible {
+  outline: 3px solid rgba(40, 89, 197, .28);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Inputs that failed validation: a clear red edge, not just red text. */
+.error input[type="text"],
+.error input[type="email"],
+.error input[type="password"],
+.error input[type="url"],
+.error input[type="number"],
+.error select {
+  border-color: #e0777b;
+  box-shadow: 0 0 0 3px rgba(194, 65, 69, .08);
+}
+
+/* Advanced options: tighter, quieter presentation of secondary fields. */
+#advanced-options .advanced-input-wrapper:first-child label {
+  color: #46566c;
+}
+
+#advanced-options label input::placeholder,
+#advanced-options label select {
+  font-weight: 400;
+}
+
+/* Checkbox toggle label: easier tap target on phones. */
+label.checkbox {
+  padding: 4px 0;
+  min-height: 32px;
+}
+
+/* Table actions: uniform button heights so rows scan cleanly. */
+#main-table-wrapper table .actions a.button,
+#main-table-wrapper table .actions button {
+  min-height: 32px;
+  height: 32px;
+  padding: 0 12px;
+  font-size: 12px;
+}
+
+#main-table-wrapper table .actions a.button.action,
+#main-table-wrapper table .actions button.action {
+  width: 32px;
+  padding: 0;
+}
+
+/* Table text: quiet secondary info so the primary URL reads first. */
+#main-table-wrapper table td .description {
+  font-size: 12px;
+  color: #7b8799;
+}
+
+/* Footer: calmer and aligned with the content width. */
+footer {
+  color: #8a96a7;
+  font-size: 12px;
+}
+
+footer button.link {
+  color: #5f6f86;
+  font-size: 12px;
+}
+
+/* Reduce motion for users who ask for it (kept in sync with the refresh layer). */
+@media (prefers-reduced-motion: reduce) {
+  .clipboard button,
+  main form input#target,
+  main #shorturl h1.link {
+    transition: none;
   }
 }
