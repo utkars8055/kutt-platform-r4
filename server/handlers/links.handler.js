@@ -18,10 +18,23 @@ const env = require("../env");
 const platformSettings = require("../services/platform-settings");
 const { isSocialCrawler } = require("../utils/crawler");
 const { normalizeCountdownSeconds } = require("../utils/redirect-config");
+const { resolvePreviewImageUrl } = require("../utils/preview-image");
 const WHATWGURL = URL.URL;
 
 const CustomError = utils.CustomError;
 const dnsLookup = promisify(dns.lookup);
+
+async function resolvePreviewImageInput(req, res) {
+  if (!req.body?.preview_image_url) return;
+  try {
+    req.body.preview_image_url = await resolvePreviewImageUrl(req.body.preview_image_url);
+  } catch (error) {
+    const message = error.message || "The preview image could not be resolved.";
+    res.locals.errors = { ...(res.locals.errors || {}), preview_image_url: message };
+    throw new CustomError(message, 400);
+  }
+}
+
 
 async function get(req, res) {
   const { limit, skip } = req.context;
@@ -139,6 +152,8 @@ async function create(req, res) {
     throw new CustomError(error);
   }
 
+  await resolvePreviewImageInput(req, res);
+
   // Create new link
   const address = customurl || tasks[2];
   const link = await query.link.create({
@@ -183,6 +198,8 @@ async function edit(req, res) {
   if (!link) {
     throw new CustomError("Link was not found.");
   }
+
+  await resolvePreviewImageInput(req, res);
 
   let isChanged = false;
   [
@@ -292,6 +309,8 @@ async function editAdmin(req, res) {
   if (!link) {
     throw new CustomError("Link was not found.");
   }
+
+  await resolvePreviewImageInput(req, res);
 
   let isChanged = false;
   [
