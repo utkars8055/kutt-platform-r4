@@ -24,8 +24,12 @@ const WHATWGURL = URL.URL;
 const CustomError = utils.CustomError;
 const dnsLookup = promisify(dns.lookup);
 
-async function resolvePreviewImageInput(req, res) {
+async function resolvePreviewImageInput(req, res, existingLinkId) {
   if (!req.body?.preview_image_url) return;
+  if (existingLinkId) {
+    const existingPreview = await query.preview.find(existingLinkId);
+    if (existingPreview?.image_url === req.body.preview_image_url) return;
+  }
   try {
     req.body.preview_image_url = await resolvePreviewImageUrl(req.body.preview_image_url);
   } catch (error) {
@@ -199,7 +203,7 @@ async function edit(req, res) {
     throw new CustomError("Link was not found.");
   }
 
-  await resolvePreviewImageInput(req, res);
+  await resolvePreviewImageInput(req, res, link.id);
 
   let isChanged = false;
   [
@@ -310,7 +314,7 @@ async function editAdmin(req, res) {
     throw new CustomError("Link was not found.");
   }
 
-  await resolvePreviewImageInput(req, res);
+  await resolvePreviewImageInput(req, res, link.id);
 
   let isChanged = false;
   [
