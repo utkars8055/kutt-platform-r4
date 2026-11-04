@@ -7,6 +7,7 @@ const bcrypt = require("bcryptjs");
 const query = require("./queries");
 const env = require("./env");
 const utils = require("./utils")
+const platformSettings = require("./services/platform-settings");
 
 const jwtOptions = {
   jwtFromRequest: req => req.cookies?.token,
@@ -112,8 +113,13 @@ if (env.OIDC_ENABLED) {
   
             // Existing user.
             if (existingUser) return done(null, existingUser);
+
+            // New user. Respect the administrator's public signup setting.
+            const settings = await platformSettings.getSettings();
+            if (settings.allowPublicSignup === false) {
+              return done(null, false, { message: "New account creation is currently disabled." });
+            }
   
-            // New user.
             // Generate a random password which is not supposed to be used directly.
             const salt = await bcrypt.genSalt(12);
             const password = utils.generateRandomPassword();
