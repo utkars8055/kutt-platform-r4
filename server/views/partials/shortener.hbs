@@ -110,8 +110,9 @@
         </label>
       </div>
       <div class="advanced-input-wrapper">
-        <label>Social preview image URL (external):
-          <input type="url" name="preview_image_url" maxlength="2040" placeholder="https://image-host.example/preview.jpg" />
+        <label>Social preview image or sharing URL:
+          <input type="url" name="preview_image_url" maxlength="2040" placeholder="https://imgur.com/... or https://.../image.jpg" />
+          {{#if errors.preview_image_url}}<p class="error">{{errors.preview_image_url}}</p>{{/if}}
         </label>
         <label>Social preview video URL (external, optional):
           <input type="url" name="preview_video_url" maxlength="2040" placeholder="https://video-host.example/preview.mp4" />
