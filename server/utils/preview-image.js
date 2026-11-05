@@ -4,6 +4,7 @@ const net = require("node:net");
 
 const MAX_HTML_BYTES = 512 * 1024;
 const MAX_SIGNATURE_BYTES = 64;
+const MAX_VIDEO_BYTES = 100 * 1024 * 1024;
 const REQUEST_TIMEOUT_MS = 8000;
 const MAX_RESOLVE_TIME_MS = 7000;
 const MAX_REDIRECTS = 4;
@@ -88,7 +89,7 @@ function extractImageFromHtml(html, baseUrl) {
   return null;
 }
 
-// Identify the real file type from its first bytes, not from the Content-Type header.
+// Identify the real image type from its first bytes, not from the Content-Type header.
 function sniffImageType(buffer) {
   if (buffer.length >= 3 && buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff) return "image/jpeg";
   if (buffer.length >= 8 && buffer.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))) return "image/png";
@@ -105,6 +106,17 @@ function sniffImageType(buffer) {
   return null;
 }
 
+// Identify MP4 or WebM from the container signature. Other MP4-family brands (still images, QuickTime) are rejected.
+function sniffVideoType(buffer) {
+  if (buffer.length >= 12 && buffer.subarray(4, 8).toString("ascii") === "ftyp") {
+    const brand = buffer.subarray(8, 12).toString("ascii");
+    if (["avif", "avis", "heic", "heix", "mif1", "msf1", "qt  "].includes(brand)) return null;
+    return "video/mp4";
+  }
+  if (buffer.length >= 4 && buffer[0] === 0x1a && buffer[1] === 0x45 && buffer[2] === 0xdf && buffer[3] === 0xa3) return "video/webm";
+  return null;
+}
+
 function parseSafeUrl(value) {
   let url;
   try {
@@ -114,12 +126,12 @@ function parseSafeUrl(value) {
   }
 
   if (url.protocol !== "https:" || url.username || url.password || (url.port && url.port !== "443")) {
-    throw userError("Image links must use a public HTTPS address.");
+    throw userError("Media links must use a public HTTPS address.");
   }
 
   const hostname = url.hostname.toLowerCase().replace(/^\[|\]$/g, "");
   if (!hostname || hostname === "localhost" || hostname.endsWith(".localhost") || hostname.endsWith(".local") || hostname.endsWith(".internal")) {
-    throw userError("That image host is not publicly accessible.");
+    throw userError("That media host is not publicly accessible.");
   }
 
   url.hash = "";
@@ -131,22 +143,22 @@ async function getPublicAddress(hostname) {
   try {
     records = await dns.promises.lookup(hostname, { all: true, verbatim: true });
   } catch {
-    throw userError(`The image host ${hostname} could not be reached.`);
+    throw userError(`The host ${hostname} could not be reached.`);
   }
 
   if (!records.length || records.some(record => !isPublicIp(record.address))) {
-    throw userError("That link does not point to a safe public image host.");
+    throw userError("That link does not point to a safe public host.");
   }
 
   return records[0];
 }
 
-// Fetches one URL. Returns one of:
-//   { redirect }                       the host sent a redirect
-//   { kind: "image", imageType }       verified image bytes
-//   { kind: "html", html }             a web page
-//   { kind: "other", contentType }     anything else
-function requestUrl(url, timeoutMs = REQUEST_TIMEOUT_MS) {
+// Fetches one URL with DNS pinning. Returns one of:
+//   { redirect }                              the host sent a redirect
+//   { kind: "media", type, contentLength }    bytes matched the sniffer
+//   { kind: "html", html }                    a web page
+//   { kind: "other", contentType }            anything else
+function requestUrl(url, timeoutMs = REQUEST_TIMEOUT_MS, sniffer = sniffImageType) {
   return new Promise(async (resolve, reject) => {
     let address;
     try {
@@ -176,7 +188,7 @@ function requestUrl(url, timeoutMs = REQUEST_TIMEOUT_MS) {
       lookup,
       servername: url.hostname,
       headers: {
-        Accept: "image/avif,image/webp,image/apng,image/*,text/html;q=0.9,*/*;q=0.5",
+        Accept: "image/avif,image/webp,image/apng,image/*,video/mp4,video/webm,text/html;q=0.9,*/*;q=0.5",
         "Accept-Language": "en-US,en;q=0.9",
         "User-Agent": BROWSER_USER_AGENT,
       },
@@ -189,10 +201,11 @@ function requestUrl(url, timeoutMs = REQUEST_TIMEOUT_MS) {
       }
       if (status < 200 || status >= 300) {
         response.resume();
-        return finish(userError(`${url.hostname} responded with HTTP ${status}. The image may be private, removed, or blocking automated requests.`));
+        return finish(userError(`${url.hostname} responded with HTTP ${status}. The file may be private, removed, or blocking automated requests.`));
       }
 
       const contentType = String(response.headers["content-type"] || "").split(";")[0].trim().toLowerCase();
+      const contentLength = Number.parseInt(response.headers["content-length"] || "", 10) || null;
       const isHtml = contentType.includes("text/html") || contentType.includes("application/xhtml+xml");
       const limit = isHtml ? MAX_HTML_BYTES : MAX_SIGNATURE_BYTES;
       const chunks = [];
@@ -200,8 +213,8 @@ function requestUrl(url, timeoutMs = REQUEST_TIMEOUT_MS) {
 
       const build = buffer => {
         if (isHtml) return { kind: "html", html: buffer.toString("utf8") };
-        const imageType = sniffImageType(buffer);
-        if (imageType) return { kind: "image", imageType };
+        const type = sniffer(buffer);
+        if (type) return { kind: "media", type, contentLength };
         return { kind: "other", contentType: contentType || "unknown content type" };
       };
 
@@ -217,7 +230,7 @@ function requestUrl(url, timeoutMs = REQUEST_TIMEOUT_MS) {
       response.on("error", error => finish(error));
     });
 
-    request.setTimeout(requestTimeout, () => request.destroy(new Error("Image host timed out.")));
+    request.setTimeout(requestTimeout, () => request.destroy(new Error("Host timed out.")));
     request.on("error", error => finish(error));
   });
 }
@@ -225,7 +238,6 @@ function requestUrl(url, timeoutMs = REQUEST_TIMEOUT_MS) {
 async function resolvePreviewImageUrl(input) {
   let currentUrl = parseSafeUrl(input);
   const deadline = Date.now() + MAX_RESOLVE_TIME_MS;
-  const inputIsDirectImage = IMAGE_EXTENSION.test(currentUrl.pathname);
 
   for (let hop = 0; hop <= MAX_REDIRECTS; hop += 1) {
     const remainingMs = deadline - Date.now();
@@ -233,7 +245,7 @@ async function resolvePreviewImageUrl(input) {
 
     let response;
     try {
-      response = await requestUrl(currentUrl, remainingMs);
+      response = await requestUrl(currentUrl, remainingMs, sniffImageType);
     } catch (error) {
       if (error.userFacing) throw error;
       throw userError(`The image link could not be checked (${error.message || "network error"}). Make sure it is public and try again.`);
@@ -249,7 +261,7 @@ async function resolvePreviewImageUrl(input) {
       continue;
     }
 
-    if (response.kind === "image") return currentUrl.toString();
+    if (response.kind === "media") return currentUrl.toString();
 
     if (response.kind === "other") {
       throw userError(`${currentUrl.hostname} returned ${response.contentType}, not an image. Try a direct image link.`);
@@ -275,7 +287,48 @@ async function resolvePreviewImageUrl(input) {
   throw userError("Could not resolve that sharing link to an image.");
 }
 
+// Validates a direct video link. Returns the URL and the verified MIME type (video/mp4 or video/webm).
+async function resolvePreviewVideoUrl(input) {
+  let currentUrl = parseSafeUrl(input);
+  const deadline = Date.now() + MAX_RESOLVE_TIME_MS;
+
+  for (let hop = 0; hop <= MAX_REDIRECTS; hop += 1) {
+    const remainingMs = deadline - Date.now();
+    if (remainingMs <= 0) throw userError("The video host took too long to respond.");
+
+    let response;
+    try {
+      response = await requestUrl(currentUrl, remainingMs, sniffVideoType);
+    } catch (error) {
+      if (error.userFacing) throw error;
+      throw userError(`The video link could not be checked (${error.message || "network error"}). Make sure it is public and try again.`);
+    }
+
+    if (response.redirect) {
+      if (hop === MAX_REDIRECTS) throw userError("The video host redirected too many times.");
+      try {
+        currentUrl = parseSafeUrl(new URL(response.redirect, currentUrl).toString());
+      } catch (error) {
+        throw userError(error.message || "The video host redirected to an unsupported address.");
+      }
+      continue;
+    }
+
+    if (response.kind === "media") {
+      if (response.contentLength && response.contentLength > MAX_VIDEO_BYTES) {
+        throw userError("That video is larger than 100 MB and is too large for link previews.");
+      }
+      return { url: currentUrl.toString(), mimeType: response.type };
+    }
+
+    throw userError(`${currentUrl.hostname} did not return an MP4 or WebM video. Use a direct link to a public .mp4 or .webm file.`);
+  }
+
+  throw userError("Could not verify that video link.");
+}
+
 module.exports = {
   resolvePreviewImageUrl,
-  _internals: { isPublicIp, extractImageFromHtml, parseSafeUrl, decodeHtml, sniffImageType },
+  resolvePreviewVideoUrl,
+  _internals: { isPublicIp, extractImageFromHtml, parseSafeUrl, decodeHtml, sniffImageType, sniffVideoType },
 };
