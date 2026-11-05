@@ -319,6 +319,7 @@ async function linkEdit(req, res) {
     ...(link && utils.sanitize.link_html(link)),
     ...(preview && {
       preview_image_url: preview.image_url, preview_video_url: preview.video_url, preview_video_mime_type: preview.video_mime_type,
+      preview_video_width: preview.video_width, preview_video_height: preview.video_height,
       preview_title: preview.title, preview_description: preview.description, preview_image_alt: preview.image_alt
     }),
     click_limit: linkSettings?.click_limit,
@@ -335,6 +336,7 @@ async function linkEditAdmin(req, res) {
     ...(link && utils.sanitize.link_html(link)),
     ...(preview && {
       preview_image_url: preview.image_url, preview_video_url: preview.video_url, preview_video_mime_type: preview.video_mime_type,
+      preview_video_width: preview.video_width, preview_video_height: preview.video_height,
       preview_title: preview.title, preview_description: preview.description, preview_image_alt: preview.image_alt
     }),
     click_limit: linkSettings?.click_limit,

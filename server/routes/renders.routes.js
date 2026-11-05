@@ -8,6 +8,7 @@ const auth = require("../handlers/auth.handler");
 const env = require("../env");
 const links = require("../handlers/links.handler");
 const platformSettings = require("../services/platform-settings");
+const previewMedia = require("../handlers/preview-media.handler");
 
 const router = Router();
 
@@ -208,6 +209,14 @@ router.get(
   asyncHandler(auth.admin), 
   asyncHandler(renders.confirmDomainDeleteAdmin)
 );
+
+// Public endpoints used by social cards and video players. The image route
+// only reads a preview URL already stored against this link UUID.
+router.get(
+  "/media/preview/:id",
+  asyncHandler(previewMedia.servePreviewImage)
+);
+
 
 router.get(
   "/preview/:id",
