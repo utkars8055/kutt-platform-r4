@@ -106,11 +106,8 @@ main #shorturl .clipboard button:focus-visible {
 
 /* -------------------------------------------------------------------------
    UI POLISH (round 2)
-   Restrained refinements to shared controls. Nothing here changes layout
-   structure, routes or behaviour.
    ------------------------------------------------------------------------- */
 
-/* Shared focus treatment for links and controls that are not buttons. */
 a:focus-visible,
 button.link:focus-visible,
 label.checkbox input[type="checkbox"]:focus-visible {
@@ -119,7 +116,6 @@ label.checkbox input[type="checkbox"]:focus-visible {
   border-radius: 4px;
 }
 
-/* Inputs that failed validation: a clear red edge, not just red text. */
 .error input[type="text"],
 .error input[type="email"],
 .error input[type="password"],
@@ -130,7 +126,6 @@ label.checkbox input[type="checkbox"]:focus-visible {
   box-shadow: 0 0 0 3px rgba(194, 65, 69, .08);
 }
 
-/* Advanced options: tighter, quieter presentation of secondary fields. */
 #advanced-options .advanced-input-wrapper:first-child label {
   color: #46566c;
 }
@@ -140,13 +135,11 @@ label.checkbox input[type="checkbox"]:focus-visible {
   font-weight: 400;
 }
 
-/* Checkbox toggle label: easier tap target on phones. */
 label.checkbox {
   padding: 4px 0;
   min-height: 32px;
 }
 
-/* Table actions: uniform button heights so rows scan cleanly. */
 #main-table-wrapper table .actions a.button,
 #main-table-wrapper table .actions button {
   min-height: 32px;
@@ -161,13 +154,11 @@ label.checkbox {
   padding: 0;
 }
 
-/* Table text: quiet secondary info so the primary URL reads first. */
 #main-table-wrapper table td .description {
   font-size: 12px;
   color: #7b8799;
 }
 
-/* Footer: calmer and aligned with the content width. */
 footer {
   color: #8a96a7;
   font-size: 12px;
@@ -178,11 +169,42 @@ footer button.link {
   font-size: 12px;
 }
 
-/* Reduce motion for users who ask for it (kept in sync with the refresh layer). */
 @media (prefers-reduced-motion: reduce) {
   .clipboard button,
   main form input#target,
   main #shorturl h1.link {
     transition: none;
   }
+}
+
+/* -------------------------------------------------------------------------
+   ADMIN SETTINGS: REAL CHECKBOXES
+   The global input styling was stretching the on/off checkboxes into wide
+   bars, so their state was hard to read. These rules keep them small,
+   square and clearly checked or unchecked on the admin settings page.
+   ------------------------------------------------------------------------- */
+.settings-panel label.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: auto;
+  min-height: 40px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.settings-panel input[type="checkbox"] {
+  appearance: auto;
+  -webkit-appearance: checkbox;
+  flex: 0 0 18px;
+  width: 18px;
+  min-width: 18px;
+  height: 18px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  box-shadow: none;
+  background: none;
+  accent-color: #2859c5;
+  cursor: pointer;
 }
