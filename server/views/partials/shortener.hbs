@@ -122,6 +122,12 @@
         <label>Video MIME type:
           <input type="text" name="preview_video_mime_type" maxlength="128" placeholder="video/mp4" />
         </label>
+        <label>Video width (optional):
+          <input type="number" name="preview_video_width" min="1" max="7680" step="1" placeholder="1280" />
+        </label>
+        <label>Video height (optional):
+          <input type="number" name="preview_video_height" min="1" max="4320" step="1" placeholder="720" />
+        </label>
         <label>Social preview metadata:
           <select name="preview_enabled">
             <option value="true" selected>Enabled</option>

@@ -188,7 +188,6 @@ function requestUrl(url, timeoutMs = REQUEST_TIMEOUT_MS, sniffer = sniffImageTyp
       lookup,
       servername: url.hostname,
       headers: {
-        Accept: "image/avif,image/webp,image/apng,image/*,video/mp4,video/webm,text/html;q=0.9,*/*;q=0.5",
         "Accept-Language": "en-US,en;q=0.9",
         "User-Agent": BROWSER_USER_AGENT,
       },
@@ -233,6 +232,106 @@ function requestUrl(url, timeoutMs = REQUEST_TIMEOUT_MS, sniffer = sniffImageTyp
     request.setTimeout(requestTimeout, () => request.destroy(new Error("Host timed out.")));
     request.on("error", error => finish(error));
   });
+}
+
+
+const MAX_PREVIEW_IMAGE_BYTES = 10 * 1024 * 1024;
+const IMAGE_FETCH_TIMEOUT_MS = 12000;
+
+async function requestImageBuffer(url, timeoutMs = IMAGE_FETCH_TIMEOUT_MS) {
+  const address = await getPublicAddress(url.hostname);
+  return new Promise((resolve, reject) => {
+    let settled = false;
+    const finish = (error, value) => {
+      if (settled) return;
+      settled = true;
+      error ? reject(error) : resolve(value);
+    };
+    const lookup = (_hostname, options, callback) => {
+      if (options && options.all) {
+        callback(null, [{ address: address.address, family: address.family }]);
+      } else {
+        callback(null, address.address, address.family);
+      }
+    };
+    const requestTimeout = Math.max(1, Math.min(IMAGE_FETCH_TIMEOUT_MS, timeoutMs));
+    const request = https.get(url, {
+      lookup,
+      servername: url.hostname,
+      headers: {
+        "User-Agent": BROWSER_USER_AGENT,
+      },
+      timeout: requestTimeout,
+    }, response => {
+      const status = response.statusCode || 0;
+      if ([301, 302, 303, 307, 308].includes(status)) {
+        response.resume();
+        return finish(null, { redirect: response.headers.location || null });
+      }
+      if (status !== 200) {
+        response.resume();
+        return finish(userError(`${url.hostname} returned HTTP ${status} while loading the preview image.`));
+      }
+
+      const declaredSize = Number.parseInt(response.headers["content-length"] || "", 10);
+      if (Number.isFinite(declaredSize) && declaredSize > MAX_PREVIEW_IMAGE_BYTES) {
+        response.destroy();
+        return finish(userError("The preview image is larger than the 10 MB processing limit."));
+      }
+
+      const contentType = String(response.headers["content-type"] || "").split(";")[0].trim().toLowerCase();
+      if (contentType.startsWith("text/") || contentType.includes("html") || contentType.includes("xml")) {
+        response.resume();
+        return finish(userError("The saved preview URL returned a web page instead of an image."));
+      }
+
+      const chunks = [];
+      let size = 0;
+      response.on("data", chunk => {
+        if (settled) return;
+        size += chunk.length;
+        if (size > MAX_PREVIEW_IMAGE_BYTES) {
+          response.destroy();
+          return finish(userError("The preview image is larger than the 10 MB processing limit."));
+        }
+        chunks.push(chunk);
+      });
+      response.on("end", () => {
+        if (settled) return;
+        const buffer = Buffer.concat(chunks);
+        const mimeType = sniffImageType(buffer);
+        if (!mimeType) return finish(userError("The saved preview URL no longer contains a supported image."));
+        return finish(null, { buffer, mimeType });
+      });
+      response.on("error", error => finish(error));
+    });
+    request.on("timeout", () => request.destroy(new Error("Preview image request timed out.")));
+    request.on("error", error => finish(error));
+  });
+}
+
+/**
+ * Retrieve a previously verified image URL using the same DNS pinning and
+ * per-hop private-address checks as the resolver. Never accepts an arbitrary
+ * request URL from the browser; callers must load the URL from the link row.
+ */
+async function fetchPublicImageBuffer(input) {
+  let currentUrl = parseSafeUrl(input);
+  const deadline = Date.now() + IMAGE_FETCH_TIMEOUT_MS;
+
+  for (let hop = 0; hop <= MAX_REDIRECTS; hop += 1) {
+    const remainingMs = deadline - Date.now();
+    if (remainingMs <= 0) throw userError("The preview image provider timed out.");
+    const result = await requestImageBuffer(currentUrl, remainingMs);
+    if (result.redirect) {
+      if (hop === MAX_REDIRECTS) throw userError("The preview image host redirected too many times.");
+      currentUrl = parseSafeUrl(new URL(result.redirect, currentUrl).toString());
+      continue;
+    }
+    return result;
+  }
+
+  throw userError("Could not retrieve the saved preview image.");
 }
 
 async function resolvePreviewImageUrl(input) {
@@ -330,5 +429,6 @@ async function resolvePreviewVideoUrl(input) {
 module.exports = {
   resolvePreviewImageUrl,
   resolvePreviewVideoUrl,
-  _internals: { isPublicIp, extractImageFromHtml, parseSafeUrl, decodeHtml, sniffImageType, sniffVideoType },
+  fetchPublicImageBuffer,
+  _internals: { isPublicIp, extractImageFromHtml, parseSafeUrl, decodeHtml, sniffImageType, sniffVideoType, requestImageBuffer, requestUrl },
 };

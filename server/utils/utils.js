@@ -4,7 +4,7 @@ const crypto = require("node:crypto");
 const JWT = require("jsonwebtoken");
 const path = require("node:path");
 const fs = require("node:fs");
-const hbs = require("hbs");
+const Handlebars = require("handlebars");
 const ms = require("ms");
 
 const { ROLES } = require("../consts");
@@ -399,35 +399,43 @@ function getUseragentOS(agent) {
 }
 
 function registerHandlebarsHelpers() {
-  hbs.registerHelper("ifEquals", function(arg1, arg2, options) {
+  Handlebars.registerHelper("ifEquals", function(arg1, arg2, options) {
     return (arg1 === arg2) ? options.fn(this) : options.inverse(this);
   });
 
-  hbs.registerHelper("json", function(context) {
+  Handlebars.registerHelper("json", function(context) {
     return JSON.stringify(context);
   });
-  
-  const blocks = {};
 
-  hbs.registerHelper("extend", function(name, context) {
-      let block = blocks[name];
-      if (!block) {
-          block = blocks[name] = [];
-      }
-      block.push(context.fn(this));
-  });
-
-  hbs.registerHelper("block", function(name) {
-      const val = (blocks[name] || []).join("\n");
-      blocks[name] = [];
-      return val;
-  });
-  hbs.registerPartials(path.join(__dirname, "../views/partials"), function (err) {});
-  const customPartialsPath = path.join(__dirname, "../../custom/views/partials");
-  const customPartialsExist = fs.existsSync(customPartialsPath);
-  if (customPartialsExist) {
-    hbs.registerPartials(customPartialsPath, function (err) {});
+  // Keep layout sections on the individual render context. A process-global
+  // map can mix scripts/styles between simultaneous requests.
+  function getLayoutBlocks(options) {
+    const root = options?.data?.root;
+    if (!root || typeof root !== "object") return Object.create(null);
+    if (!root.__layoutBlocks || typeof root.__layoutBlocks !== "object") {
+      Object.defineProperty(root, "__layoutBlocks", {
+        value: Object.create(null),
+        configurable: true,
+        enumerable: false,
+        writable: true,
+      });
+    }
+    return root.__layoutBlocks;
   }
+
+  Handlebars.registerHelper("extend", function(name, options) {
+    const blocks = getLayoutBlocks(options);
+    if (!blocks[name]) blocks[name] = [];
+    blocks[name].push(options.fn(this));
+    return "";
+  });
+
+  Handlebars.registerHelper("block", function(name, options) {
+    const blocks = getLayoutBlocks(options);
+    const value = (blocks[name] || []).join("\n");
+    delete blocks[name];
+    return new Handlebars.SafeString(value);
+  });
 }
 
 // grab custom styles file name from the custom/css folder

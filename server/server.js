@@ -6,7 +6,8 @@ const express = require("express");
 const session = require("cookie-session");
 const helmet = require("helmet");
 const path = require("node:path");
-const hbs = require("hbs");
+const { engine } = require("express-handlebars");
+const Handlebars = require("handlebars");
 
 const helpers = require("./handlers/helpers.handler");
 const renders = require("./handlers/renders.handler");
@@ -61,12 +62,29 @@ app.use(locals.config);
 
 // template engine / serve html
 
-app.set("view engine", "hbs");
-app.set("views", [
-  path.join(__dirname, "../custom/views"),
-  path.join(__dirname, "views"),
-]);
+const customViewsPath = path.join(__dirname, "../custom/views");
+const defaultViewsPath = path.join(__dirname, "views");
+const viewsDirectories = [customViewsPath, defaultViewsPath];
+app.set("views", viewsDirectories);
+
+const customLayoutPath = path.join(customViewsPath, "layout.hbs");
+const layoutsDirectory = require("node:fs").existsSync(customLayoutPath)
+  ? customViewsPath
+  : defaultViewsPath;
+const partialsDirectories = [
+  path.join(customViewsPath, "partials"),
+  path.join(defaultViewsPath, "partials"),
+].filter(directory => require("node:fs").existsSync(directory));
+
 utils.registerHandlebarsHelpers();
+app.engine("hbs", engine({
+  extname: ".hbs",
+  defaultLayout: "layout",
+  layoutsDir: layoutsDirectory,
+  partialsDir: partialsDirectories,
+  handlebars: Handlebars,
+}));
+app.set("view engine", "hbs");
 
 // if is custom domain, redirect to the set homepage
 app.use(asyncHandler(links.redirectCustomDomainHomepage));

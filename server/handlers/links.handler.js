@@ -674,31 +674,78 @@ async function redirect(req, res, next) {
     }
   }
 
-  // Recognised social crawlers receive server-rendered metadata in the initial HTML.
+  // Social platforms receive a server-rendered card. The response is never
+  // shared-cached: Vercel must not reuse crawler HTML for a browser request.
   if (isCrawler && !link.password) {
     const [preview, linkSettings] = await Promise.all([
       query.preview.find(link.id),
       query.linkSettings.find(link.id),
     ]);
-    if (preview && linkSettings?.preview_enabled !== false && linkSettings?.preview_enabled !== 0 && linkSettings?.preview_enabled !== "0") {
-      const shortUrl = utils.getShortURL(link.address, link.domain).url;
-      res.setHeader("Cache-Control", "public, max-age=300, stale-while-revalidate=600");
-      res.setHeader("X-Robots-Tag", "noindex, nofollow");
-      res.status(200).render("social_preview", {
-        layout: false,
-        preview: {
-          ...preview,
-          title: preview.title || link.description || env.SITE_NAME,
-          description: preview.description || link.description || "",
-          video_mime_type: preview.video_mime_type || "video/mp4",
-          image_secure_url: preview.image_url?.startsWith("https://") ? preview.image_url : null,
-          video_secure_url: preview.video_url?.startsWith("https://") ? preview.video_url : null,
-        },
-        shortUrl,
-        site_name: env.SITE_NAME,
-      });
-      return;
+    const previewEnabled = linkSettings?.preview_enabled !== false
+      && linkSettings?.preview_enabled !== 0
+      && linkSettings?.preview_enabled !== "0";
+    const shortUrl = utils.getShortURL(link.address, link.domain).url;
+    const fallbackImageUrl = new URL("/images/card.png", shortUrl).toString();
+    const imageUrl = previewEnabled && preview?.image_url
+      ? new URL(`/media/preview/${encodeURIComponent(link.uuid)}`, shortUrl).toString()
+      : fallbackImageUrl;
+
+    let videoUrl = null;
+    if (previewEnabled && preview?.video_url) {
+      try {
+        const parsedVideo = new URL(preview.video_url);
+        if (parsedVideo.protocol === "https:"
+          && !parsedVideo.username
+          && !parsedVideo.password
+          && (!parsedVideo.port || parsedVideo.port === "443")
+          && ["video/mp4", "video/webm"].includes(preview.video_mime_type)) {
+          videoUrl = parsedVideo.toString();
+        }
+      } catch {
+        // Ignore legacy invalid preview URLs. The original destination is unchanged.
+      }
     }
+
+    const videoWidth = Number.isInteger(Number(preview?.video_width))
+      && Number(preview?.video_width) >= 1
+      && Number(preview?.video_width) <= 7680
+      ? Number(preview.video_width)
+      : null;
+    const videoHeight = Number.isInteger(Number(preview?.video_height))
+      && Number(preview?.video_height) >= 1
+      && Number(preview?.video_height) <= 4320
+      ? Number(preview.video_height)
+      : null;
+    res.setHeader("Cache-Control", "private, no-store, max-age=0");
+    res.setHeader("Vary", "User-Agent");
+    res.setHeader("X-Robots-Tag", "noindex, nofollow");
+    res.setHeader("X-Content-Type-Options", "nosniff");
+    res.setHeader("Referrer-Policy", "no-referrer");
+    res.status(200).render("social_preview", {
+      layout: false,
+      preview: {
+        title: previewEnabled
+          ? (preview?.title || link.description || env.SITE_NAME)
+          : (link.description || env.SITE_NAME),
+        description: previewEnabled
+          ? (preview?.description || link.description || "A link shared with " + env.SITE_NAME + ".")
+          : ("A link shared with " + env.SITE_NAME + "."),
+        image_secure_url: imageUrl,
+        image_alt: previewEnabled && preview?.image_alt ? preview.image_alt : env.SITE_NAME + " link preview",
+        image_width: previewEnabled && preview?.image_url ? 1200 : 500,
+        image_height: previewEnabled && preview?.image_url ? 630 : 300,
+        video_secure_url: videoUrl,
+        video_mime_type: videoUrl ? preview.video_mime_type : null,
+        video_width: videoUrl ? videoWidth : null,
+        video_height: videoUrl ? videoHeight : null,
+      },
+      playerWidth: videoWidth || 1280,
+      playerHeight: videoHeight || 720,
+      twitterStreamUrl: videoUrl && preview?.video_mime_type === "video/mp4" ? videoUrl : null,
+      shortUrl,
+      site_name: env.SITE_NAME,
+    });
+    return;
   }
 
   // Keep crawler traffic separate from humans and never expose it to monetization.
