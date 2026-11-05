@@ -30,7 +30,7 @@ async function resolvePreviewImageInput(req, res, existingLinkId) {
     const existingPreview = await query.preview.find(existingLinkId);
     let looksLikeDirectImage = false;
     try {
-      looksLikeDirectImage = /\.(?:avif|bmp|gif|jpe?g|png|webp)$/i.test(new URL(req.body.preview_image_url).pathname);
+      looksLikeDirectImage = /\.(?:avif|bmp|gif|jpe?g|png|webp)$/i.test(new WHATWGURL(req.body.preview_image_url).pathname);
     } catch {
       // Invalid URLs are handled by the resolver below.
     }
@@ -685,15 +685,15 @@ async function redirect(req, res, next) {
       && linkSettings?.preview_enabled !== 0
       && linkSettings?.preview_enabled !== "0";
     const shortUrl = utils.getShortURL(link.address, link.domain).url;
-    const fallbackImageUrl = new URL("/images/card.png", shortUrl).toString();
+    const fallbackImageUrl = new WHATWGURL("/images/card.png", shortUrl).toString();
     const imageUrl = previewEnabled && preview?.image_url
-      ? new URL(`/media/preview/${encodeURIComponent(link.uuid)}`, shortUrl).toString()
+      ? new WHATWGURL(`/media/preview/${encodeURIComponent(link.uuid)}`, shortUrl).toString()
       : fallbackImageUrl;
 
     let videoUrl = null;
     if (previewEnabled && preview?.video_url) {
       try {
-        const parsedVideo = new URL(preview.video_url);
+        const parsedVideo = new WHATWGURL(preview.video_url);
         if (parsedVideo.protocol === "https:"
           && !parsedVideo.username
           && !parsedVideo.password
