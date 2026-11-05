@@ -25,6 +25,7 @@
   },
   "homepage": "https://github.com/thedevs-network/kutt#readme",
   "dependencies": {
+    "@vercel/analytics": "^2.0.1",
     "bcryptjs": "2.4.3",
     "better-sqlite3": "13.0.3",
     "bull": "4.16.5",
