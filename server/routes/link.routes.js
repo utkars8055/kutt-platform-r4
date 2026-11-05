@@ -8,6 +8,7 @@ const locals = require("../handlers/locals.handler");
 const link = require("../handlers/links.handler");
 const auth = require("../handlers/auth.handler");
 const access = require("../handlers/access.handler");
+const previewMedia = require("../handlers/preview-media.handler");
 const env = require("../env");
 
 const router = Router();
@@ -42,6 +43,7 @@ router.post(
   locals.createLink,
   helpers.rateLimit({ window: 60, limit: 30 }),
   validators.createLink,
+  asyncHandler(previewMedia.resolvePreviewVideo),
   asyncHandler(helpers.verify),
   asyncHandler(link.create)
 );
@@ -54,6 +56,7 @@ router.patch(
   locals.editLink,
   helpers.rateLimit({ window: 60, limit: 30 }),
   validators.editLink,
+  asyncHandler(previewMedia.resolvePreviewVideo),
   asyncHandler(helpers.verify),
   asyncHandler(link.edit)
 );
@@ -67,6 +70,7 @@ router.patch(
   locals.editLink,
   helpers.rateLimit({ window: 60, limit: 30 }),
   validators.editLink,
+  asyncHandler(previewMedia.resolvePreviewVideo),
   asyncHandler(helpers.verify),
   asyncHandler(link.editAdmin)
 );
