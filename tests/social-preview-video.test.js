@@ -18,6 +18,12 @@ test("crawler HTML is not shared-cached with human browsers", () => {
   assert.ok(handler.includes('"Vary", "User-Agent"'));
 });
 
+test("crawler URL construction uses the WHATWG URL constructor despite the node:url module alias", () => {
+  assert.ok(handler.includes("const WHATWGURL = URL.URL;"));
+  assert.ok(handler.includes("new WHATWGURL("));
+  assert.ok(!handler.includes("new URL("));
+});
+
 test("social card canonical and OG URL remain the shortened URL", () => {
   assert.ok(card.includes('<link rel="canonical" href="{{shortUrl}}" />'));
   assert.ok(card.includes('<meta property="og:url" content="{{shortUrl}}" />'));
