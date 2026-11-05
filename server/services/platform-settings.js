@@ -9,9 +9,9 @@ const DEFAULTS = {
   countdownSeconds: Math.min(DEFAULT_MAX_COUNTDOWN, Math.max(0, Math.floor(env.REDIRECT_COUNTDOWN_SECONDS))),
   countdownMaxSeconds: DEFAULT_MAX_COUNTDOWN,
   serviceSafetyMessage: "Always check the destination before proceeding.",
-  // true keeps current behaviour. An admin sets these to false to restrict creation.
-  allowPublicSignup: true,
-  allowUserLinks: true,
+  // false matches the live behaviour: only admins create accounts and links until an admin turns these on.
+  allowPublicSignup: false,
+  allowUserLinks: false,
 };
 
 let cached = null;
