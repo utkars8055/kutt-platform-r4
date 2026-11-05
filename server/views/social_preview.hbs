@@ -2,31 +2,38 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>{{preview.title}}</title>
   <meta name="description" content="{{preview.description}}" />
-  <meta property="og:type" content="{{#if preview.video_url}}video.other{{else}}website{{/if}}" />
+  {{#if preview.theme_color}}<meta name="theme-color" content="{{preview.theme_color}}" />{{/if}}
+  <link rel="canonical" href="{{shortUrl}}" />
+
+  {{!-- Shared Open Graph tags: read by Facebook, Messenger, WhatsApp, LinkedIn, Slack, Discord, Telegram, iMessage and others --}}
+  <meta property="og:type" content="{{#if preview.video_secure_url}}video.other{{else}}website{{/if}}" />
   <meta property="og:site_name" content="{{site_name}}" />
+  <meta property="og:locale" content="en_US" />
   <meta property="og:title" content="{{preview.title}}" />
   <meta property="og:description" content="{{preview.description}}" />
   <meta property="og:url" content="{{shortUrl}}" />
-  {{#if preview.image_url}}
-    <meta property="og:image" content="{{preview.image_url}}" />
-    {{#if preview.image_secure_url}}<meta property="og:image:secure_url" content="{{preview.image_secure_url}}" />{{/if}}
+
+  {{#if preview.image_secure_url}}
+    <meta property="og:image" content="{{preview.image_secure_url}}" />
+    <meta property="og:image:secure_url" content="{{preview.image_secure_url}}" />
     <meta property="og:image:alt" content="{{preview.image_alt}}" />
-    <meta name="twitter:card" content="summary_large_image" />
-  {{else}}
-    <meta name="twitter:card" content="summary" />
   {{/if}}
-  {{#if preview.video_url}}
-    <meta property="og:video" content="{{preview.video_url}}" />
-    <meta property="og:video:url" content="{{preview.video_url}}" />
-    {{#if preview.video_secure_url}}<meta property="og:video:secure_url" content="{{preview.video_secure_url}}" />{{/if}}
+
+  {{#if preview.video_secure_url}}
+    <meta property="og:video" content="{{preview.video_secure_url}}" />
+    <meta property="og:video:secure_url" content="{{preview.video_secure_url}}" />
     <meta property="og:video:type" content="{{preview.video_mime_type}}" />
   {{/if}}
+
+  {{!-- Twitter/X card. X ignores og:video without a player page, so it shows the image card. --}}
+  <meta name="twitter:card" content="{{#if preview.image_secure_url}}summary_large_image{{else}}summary{{/if}}" />
   <meta name="twitter:title" content="{{preview.title}}" />
   <meta name="twitter:description" content="{{preview.description}}" />
-  {{#if preview.image_url}}
-    <meta name="twitter:image" content="{{preview.image_url}}" />
+  {{#if preview.image_secure_url}}
+    <meta name="twitter:image" content="{{preview.image_secure_url}}" />
     <meta name="twitter:image:alt" content="{{preview.image_alt}}" />
   {{/if}}
 </head>
