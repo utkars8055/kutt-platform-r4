@@ -10,8 +10,6 @@ async function upsert(link_id, values) {
     preview_image_url: "image_url",
     preview_video_url: "video_url",
     preview_video_mime_type: "video_mime_type",
-    preview_video_width: "video_width",
-    preview_video_height: "video_height",
     preview_title: "title",
     preview_description: "description",
     preview_image_alt: "image_alt",
