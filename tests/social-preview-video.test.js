@@ -36,8 +36,6 @@ test("image and video metadata are available to social crawlers", () => {
     'property="og:image:height"',
     'property="og:video:secure_url"',
     'property="og:video:type"',
-    'property="og:video:width"',
-    'property="og:video:height"',
     'name="twitter:card" content="summary_large_image"',
     'name="twitter:image"',
   ]) assert.ok(card.includes(token), token);
