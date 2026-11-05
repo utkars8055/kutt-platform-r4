@@ -7,7 +7,6 @@ const read = file => fs.readFileSync(path.join(__dirname, "..", file), "utf8");
 const handler = read("server/handlers/links.handler.js");
 const media = read("server/handlers/preview-media.handler.js");
 const queries = read("server/queries/preview.queries.js");
-const migration = read("server/migrations/202611050001_video_dimensions.js");
 const card = read("server/views/social_preview.hbs");
 const interstitial = read("server/views/interstitial.hbs");
 const renderRoutes = read("server/routes/renders.routes.js");
@@ -63,11 +62,10 @@ test("image preview endpoint fetches only the preview saved for the link", () =>
   assert.ok(!media.includes("req.body.url"));
 });
 
-test("video dimensions are persisted and mapped to preview fields", () => {
-  assert.ok(migration.includes("video_width"));
-  assert.ok(migration.includes("video_height"));
-  assert.ok(queries.includes("preview_video_width"));
-  assert.ok(queries.includes("preview_video_height"));
+test("video preview metadata does not require schema changes", () => {
+  assert.ok(!queries.includes("video_width"));
+  assert.ok(!queries.includes("video_height"));
+  assert.ok(media.includes("resolvePreviewVideoUrl"));
 });
 
 test("image proxy keeps bounded image processing and safe response headers", () => {
