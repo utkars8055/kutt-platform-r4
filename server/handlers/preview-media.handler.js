@@ -7,60 +7,19 @@ const utils = require("../utils");
 
 const CustomError = utils.CustomError;
 
-function parseVideoDimensions(body) {
-  const widthRaw = body?.preview_video_width;
-  const heightRaw = body?.preview_video_height;
-  const widthValue = widthRaw === undefined || widthRaw === null ? "" : String(widthRaw).trim();
-  const heightValue = heightRaw === undefined || heightRaw === null ? "" : String(heightRaw).trim();
-
-  if (!widthValue && !heightValue) return { width: null, height: null };
-  if (!widthValue || !heightValue) {
-    throw new CustomError("Enter both video dimensions, or leave both blank.", 400);
-  }
-
-  const width = Number(widthValue);
-  const height = Number(heightValue);
-  if (!Number.isInteger(width) || !Number.isInteger(height) || width < 1 || width > 7680 || height < 1 || height > 4320) {
-    throw new CustomError("Video dimensions must be whole numbers between 1×1 and 7680×4320.", 400);
-  }
-  return { width, height };
-}
-
-// Validates a preview video before the link is saved. Dimensions are optional,
-// but when supplied they must be a valid pair and the video must be present.
+// Validates an optional preview video before the link is saved.
 async function resolvePreviewVideo(req, res, next) {
   const input = req.body?.preview_video_url;
-  const widthRaw = req.body?.preview_video_width;
-  const heightRaw = req.body?.preview_video_height;
-  const dimensionsWereSent = widthRaw !== undefined || heightRaw !== undefined;
-
-  if (input === undefined || input === null) {
-    if (!dimensionsWereSent) return next();
-    const message = "Add a video URL before setting video dimensions.";
-    res.locals.errors = { ...(res.locals.errors || {}), preview_video_url: message };
-    throw new CustomError(message, 400);
-  }
-
-  if (String(input).trim() === "") {
-    if (String(widthRaw || "").trim() || String(heightRaw || "").trim()) {
-      const message = "Add a video URL before setting video dimensions.";
-      res.locals.errors = { ...(res.locals.errors || {}), preview_video_url: message };
-      throw new CustomError(message, 400);
-    }
+  if (input === undefined || input === null || String(input).trim() === "") {
     req.body.preview_video_url = null;
     req.body.preview_video_mime_type = null;
-    req.body.preview_video_width = null;
-    req.body.preview_video_height = null;
     return next();
   }
 
   try {
     const verified = await resolvePreviewVideoUrl(String(input).trim());
-    const dimensions = parseVideoDimensions(req.body);
     req.body.preview_video_url = verified.url;
     req.body.preview_video_mime_type = verified.mimeType;
-    req.body.preview_video_width = dimensions.width;
-    req.body.preview_video_height = dimensions.height;
     return next();
   } catch (error) {
     const message = error.userFacing || error instanceof CustomError
